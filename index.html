@@ -2,93 +2,61 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<title>LIFF Form v1.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ลงทะเบียนกิจกรรม</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg,#36d1dc,#5b86e5);
-  margin: 0;
-  padding: 16px;
-}
+body { font-family: sans-serif; background:#f2f6ff; }
 .card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  max-width: 420px;
-  margin: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  max-width:420px; margin:auto; background:#fff;
+  padding:20px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.1);
 }
-.profile {
-  text-align: center;
-  margin-bottom: 16px;
+img { width:90px; border-radius:50%; display:block; margin:auto; }
+h3{text-align:center}
+label{margin-top:10px; display:block}
+input,select,button{
+  width:100%; padding:10px; margin-top:5px;
+  border-radius:8px; border:1px solid #ccc;
 }
-.profile img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-}
-label {
-  font-weight: bold;
-  margin-top: 12px;
-  display: block;
-}
-input, select, button {
-  width: 100%;
-  margin-top: 6px;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
-button {
-  background: #5b86e5;
-  color: #fff;
-  border: none;
-  margin-top: 18px;
-}
-.summary { display:none; }
+button{background:#4f46e5;color:#fff;font-size:16px;border:none}
+.summary{display:none}
 </style>
 </head>
 
 <body>
+<div class="card">
 
-<div class="card" id="formBox">
-  <div class="profile">
-    <img id="linePic">
-    <h3 id="lineName"></h3>
-  </div>
+<div id="form">
+  <img id="pic">
+  <h3 id="lineName"></h3>
 
-  <label>ชื่อ–นามสกุล</label>
-  <input id="fullname">
+  <label>ชื่อ-นามสกุล</label>
+  <input id="inputName">
 
-  <label>เบอร์โทรศัพท์</label>
-  <input id="phone" type="tel" inputmode="numeric" maxlength="10">
+  <label>เบอร์โทร</label>
+  <input id="phone" type="tel" maxlength="10">
 
   <label>กิจกรรม</label>
-<select id="activity" onchange="updateItems()">
-  <option value="">-- เลือกกิจกรรม --</option>
-</select>
+  <select id="activity" onchange="updateItems()">
+    <option value="">-- เลือกกิจกรรม --</option>
+  </select>
 
-<label>รายการ</label>
-<select id="item">
-  <option value="">-- เลือกรายการ --</option>
-</select>
+  <label>รายการ</label>
+  <select id="item">
+    <option value="">-- เลือกรายการ --</option>
+  </select>
 
-
-  <button onclick="saveData()">บันทึกข้อมูล</button>
+  <button onclick="save()">บันทึกข้อมูล</button>
 </div>
 
-<div class="card summary" id="summaryBox">
+<div id="summary" class="summary">
   <h3>✅ สรุปข้อมูล</h3>
-  <p><b>ชื่อ:</b> <span id="s_name"></span></p>
-  <p><b>เบอร์:</b> <span id="s_phone"></span></p>
-  <p><b>กิจกรรม:</b> <span id="s_activity"></span></p>
-  <p><b>รายการ:</b> <span id="s_item"></span></p>
+  <div id="sumText"></div>
   <button onclick="resetForm()">เพิ่มข้อมูลใหม่</button>
+</div>
+
 </div>
 
 <script>
@@ -100,94 +68,74 @@ let activityMap = {};
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
+  if (!liff.isLoggedIn()) return liff.login();
 
   profile = await liff.getProfile();
-  lineName.textContent = profile.displayName;
-  linePic.src = profile.pictureUrl;
+  document.getElementById("pic").src = profile.pictureUrl;
+  document.getElementById("lineName").innerText = profile.displayName;
 
-  loadActivity();
+  loadActivities();
 }
 
-async function loadActivity() {
+async function loadActivities() {
   const res = await fetch(GAS_URL + "?mode=activity");
   const data = await res.json();
 
   activityMap = {};
   data.forEach(r => {
-    if (!activityMap[r.activity]) {
-      activityMap[r.activity] = [];
-    }
+    if (!activityMap[r.activity]) activityMap[r.activity] = [];
     activityMap[r.activity].push(r.item);
   });
 
-  activity.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
-  Object.keys(activityMap).forEach(a => {
-    const op = document.createElement("option");
-    op.value = a;
-    op.textContent = a;
-    activity.appendChild(op);
+  const act = document.getElementById("activity");
+  Object.keys(activityMap).forEach(a=>{
+    act.innerHTML += `<option value="${a}">${a}</option>`;
   });
 }
 
 function updateItems() {
+  const act = activity.value;
   item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
-
-  const selected = activity.value;
-  if (!activityMap[selected]) return;
-
-  activityMap[selected].forEach(i => {
-    const op = document.createElement("option");
-    op.value = i;
-    op.textContent = i;
-    item.appendChild(op);
+  if (!activityMap[act]) return;
+  activityMap[act].forEach(i=>{
+    item.innerHTML += `<option value="${i}">${i}</option>`;
   });
 }
 
-async function saveForm() {
+async function save() {
   const payload = {
     userId: profile.userId,
     displayName: profile.displayName,
     profilename: profile.displayName,
-    inputName: fullname.value,
+    inputName: inputName.value,
     phone: phone.value,
     activity: activity.value,
     item: item.value
   };
 
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const res = await fetch(GAS_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify(payload)
   });
 
   const r = await res.json();
-  if (r.success) showSummary(payload);
-  else alert("บันทึกไม่สำเร็จ");
+  if (!r.success) return alert("บันทึกไม่สำเร็จ");
+
+  form.style.display="none";
+  summary.style.display="block";
+  sumText.innerHTML = `
+  👤 ${payload.inputName}<br>
+  📞 ${payload.phone}<br>
+  🎯 ${payload.activity}<br>
+  📌 ${payload.item}`;
 }
 
-function showSummary(d) {
-  formBox.style.display = "none";
-  summaryBox.style.display = "block";
-
-  s_name.textContent = d.inputName;
-  s_phone.textContent = d.phone;
-  s_activity.textContent = d.activity;
-  s_item.textContent = d.item;
-}
-
-function resetForm() {
-  summaryBox.style.display = "none";
-  formBox.style.display = "block";
+function resetForm(){
+  location.reload();
 }
 
 window.onload = init;
 </script>
-
-
-
 </body>
 </html>
