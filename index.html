@@ -12,7 +12,7 @@
 body {
   margin: 0;
   background: #f3f4f6;
-  font-family: system-ui, -apple-system;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
 }
 
 .container {
@@ -22,7 +22,7 @@ body {
 }
 
 .card {
-  background: #fff;
+  background: #ffffff;
   border-radius: 18px;
   padding: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,.08);
@@ -39,16 +39,22 @@ h2 {
 }
 
 .profile img {
-  width: 90px;
-  height: 90px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
+  object-fit: cover;
   margin-bottom: 8px;
 }
 
+.profile-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
 label {
-  font-weight: 600;
-  margin-top: 12px;
   display: block;
+  margin-top: 14px;
+  font-weight: 600;
 }
 
 input, select {
@@ -61,7 +67,7 @@ input, select {
 }
 
 button {
-  margin-top: 20px;
+  margin-top: 22px;
   width: 100%;
   padding: 14px;
   border-radius: 14px;
@@ -76,11 +82,13 @@ button.secondary {
   background: #64748b;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 .summary p {
-  margin: 10px 0;
   font-size: 16px;
+  margin: 10px 0;
 }
 </style>
 </head>
@@ -88,13 +96,13 @@ button.secondary {
 <body>
 <div class="container">
 
-<!-- FORM PAGE -->
-<div class="card" id="formPage">
+<!-- PAGE 1 -->
+<div class="card" id="pageForm">
   <h2>ลงทะเบียนกิจกรรม</h2>
 
   <div class="profile">
-    <img id="profileImage">
-    <div id="profileName"></div>
+    <img id="profileImage" src="">
+    <div class="profile-name" id="profileName">กำลังโหลดข้อมูล...</div>
   </div>
 
   <label>เบอร์โทรศัพท์</label>
@@ -103,94 +111,104 @@ button.secondary {
   <label>เลือกกิจกรรม</label>
   <select id="activitySelect">
     <option value="">-- เลือกกิจกรรม --</option>
-    <option>ธรรมยาตรา</option>
-    <option>จุดประทีป</option>
-    <option>ตักบาตร</option>
-    <option>ทอดผ้าป่า</option>
+    <option value="ธรรมยาตรา">ธรรมยาตรา</option>
+    <option value="จุดประทีป">จุดประทีป</option>
+    <option value="ตักบาตร">ตักบาตร</option>
+    <option value="ทอดผ้าป่า">ทอดผ้าป่า</option>
   </select>
 
-  <button onclick="showSummary()">บันทึกข้อมูล</button>
+  <button type="button" onclick="goSummary()">บันทึกข้อมูล</button>
 </div>
 
-<!-- SUMMARY PAGE -->
-<div class="card hidden" id="summaryPage">
+<!-- PAGE 2 -->
+<div class="card hidden" id="pageSummary">
   <h2>สรุปข้อมูล</h2>
 
   <div class="summary">
-    <p><b>ชื่อ:</b> <span id="s_name"></span></p>
-    <p><b>เบอร์:</b> <span id="s_phone"></span></p>
-    <p><b>กิจกรรม:</b> <span id="s_activity"></span></p>
+    <p><b>ชื่อ:</b> <span id="sumName"></span></p>
+    <p><b>เบอร์:</b> <span id="sumPhone"></span></p>
+    <p><b>กิจกรรม:</b> <span id="sumActivity"></span></p>
   </div>
 
-  <button onclick="submitData()">ยืนยันบันทึก</button>
-  <button class="secondary" onclick="resetForm()">เพิ่มข้อมูลใหม่</button>
+  <button type="button" onclick="submitData()">ยืนยันบันทึก</button>
+  <button type="button" class="secondary" onclick="backToForm()">เพิ่มข้อมูลใหม่</button>
 </div>
 
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
-let userId = "";
-let displayName = "";
+/* ================= GLOBAL ================= */
+let gUserId = "";
+let gDisplayName = "";
 
-async function init() {
+/* ================= INIT ================= */
+window.onload = async function () {
+
   if (!liff.isInClient()) {
-    alert("กรุณาเปิดผ่าน LINE เท่านั้น");
+    alert("❌ กรุณาเปิดผ่าน LINE เท่านั้น");
     return;
   }
 
-  await liff.init({ liffId: LIFF_ID });
+  try {
+    await liff.init({ liffId: LIFF_ID });
 
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    const profile = await liff.getProfile();
+
+    gUserId = profile.userId;
+    gDisplayName = profile.displayName;
+
+    document.getElementById("profileName").textContent = profile.displayName;
+    document.getElementById("profileImage").src = profile.pictureUrl;
+
+  } catch (err) {
+    console.error(err);
+    alert("เกิดข้อผิดพลาดในการเชื่อมต่อ LINE");
   }
+};
 
-  const profile = await liff.getProfile();
-
-  userId = profile.userId;
-  displayName = profile.displayName;
-
-  document.getElementById("profileName").textContent = displayName;
-  document.getElementById("profileImage").src = profile.pictureUrl;
-}
-
-function showSummary() {
+/* ================= FORM ================= */
+function goSummary() {
   const phone = document.getElementById("phoneInput").value.trim();
   const activity = document.getElementById("activitySelect").value;
 
-  if (!phone || !activity) {
+  if (phone === "" || activity === "") {
     alert("กรุณากรอกข้อมูลให้ครบ");
     return;
   }
 
-  document.getElementById("s_name").textContent = displayName;
-  document.getElementById("s_phone").textContent = phone;
-  document.getElementById("s_activity").textContent = activity;
+  document.getElementById("sumName").textContent = gDisplayName;
+  document.getElementById("sumPhone").textContent = phone;
+  document.getElementById("sumActivity").textContent = activity;
 
-  document.getElementById("formPage").classList.add("hidden");
-  document.getElementById("summaryPage").classList.remove("hidden");
+  document.getElementById("pageForm").classList.add("hidden");
+  document.getElementById("pageSummary").classList.remove("hidden");
 }
 
-function resetForm() {
-  document.getElementById("phoneInput").value = "";
-  document.getElementById("activitySelect").value = "";
-  document.getElementById("summaryPage").classList.add("hidden");
-  document.getElementById("formPage").classList.remove("hidden");
+function backToForm() {
+  document.getElementById("pageSummary").classList.add("hidden");
+  document.getElementById("pageForm").classList.remove("hidden");
 }
 
+/* ================= SUBMIT ================= */
 function submitData() {
-  const phone = document.getElementById("phoneInput").value;
+  const phone = document.getElementById("phoneInput").value.trim();
   const activity = document.getElementById("activitySelect").value;
 
   fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      userId: userId,
-      displayName: displayName,
+      userId: gUserId,
+      displayName: gDisplayName,
       phone: phone,
       activity: activity
     })
@@ -198,10 +216,12 @@ function submitData() {
   .then(() => {
     alert("บันทึกข้อมูลเรียบร้อย ✅");
     liff.closeWindow();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("บันทึกข้อมูลไม่สำเร็จ ❌");
   });
 }
-
-window.onload = init;
 </script>
 
 </body>
