@@ -2,55 +2,84 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form v1.5</title>
+
 <style>
 body {
+  background: linear-gradient(135deg,#00c6ff,#0072ff);
   font-family: sans-serif;
-  background: #f5f7fb;
   padding: 16px;
 }
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
 label {
-  font-weight: bold;
   margin-top: 12px;
   display: block;
+  font-weight: bold;
 }
-select, input, button {
+input, select, button {
   width: 100%;
   padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
   margin-top: 6px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
   font-size: 16px;
 }
 button {
   background: #06c755;
-  color: white;
+  color: #fff;
   border: none;
   margin-top: 16px;
+}
+#loading {
+  display: none;
+  text-align: center;
+  margin-top: 12px;
+}
+#summary {
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<h3 id="displayName">กำลังโหลด...</h3>
+<div class="card" id="formPage">
+  <h2 id="displayName">กำลังโหลด...</h2>
 
-<label>ชื่อ</label>
-<input id="name">
+  <label>ชื่อ-นามสกุล</label>
+  <input id="inputName">
 
-<label>เบอร์โทร</label>
-<input id="phone">
+  <label>เบอร์โทร</label>
+  <input id="phone">
 
-<label>กิจกรรม</label>
-<select id="activity" onchange="updateItems()">
-  <option value="">-- เลือกกิจกรรม --</option>
-</select>
+  <label>กิจกรรม</label>
+  <select id="activity" onchange="updateItems()">
+    <option value="">-- เลือกกิจกรรม --</option>
+  </select>
 
-<label>รายการ</label>
-<select id="item">
-  <option value="">-- เลือกรายการ --</option>
-</select>
+  <label>รายการ</label>
+  <select id="item">
+    <option value="">-- เลือกรายการ --</option>
+  </select>
 
-<button onclick="submitForm()">บันทึกข้อมูล</button>
+  <button onclick="save()">บันทึกข้อมูล</button>
+  <div id="loading">⏳ กำลังบันทึก...</div>
+</div>
+
+<div class="card" id="summary">
+  <h2>✅ บันทึกสำเร็จ</h2>
+  <p id="sumText"></p>
+  <button onclick="resetForm()">➕ เพิ่มข้อมูลใหม่</button>
+</div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -58,67 +87,75 @@ const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
 let profile = {};
-let activityData = {}; // ❗ object เท่านั้น
+let activities = {};
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
-
   if (!liff.isLoggedIn()) {
     liff.login();
     return;
   }
 
   profile = await liff.getProfile();
-  document.getElementById("displayName").innerText = profile.displayName;
+  displayName.innerText = profile.displayName;
 
   loadActivity();
 }
 
 function loadActivity() {
   fetch(GAS_URL + "?action=activity")
-    .then(res => res.json())
-    .then(data => {
-      activityData = data;
-
-      const act = document.getElementById("activity");
-      act.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
-
-      // ✅ ไม่มี index ใดๆ
-      for (const activityName in activityData) {
-        act.innerHTML +=
-          `<option value="${activityName}">${activityName}</option>`;
-      }
+    .then(r => r.json())
+    .then(d => {
+      activities = d;
+      activity.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
+      Object.keys(d).forEach(a => {
+        activity.innerHTML += `<option value="${a}">${a}</option>`;
+      });
     });
 }
 
 function updateItems() {
-  const act = document.getElementById("activity").value;
-  const item = document.getElementById("item");
-
   item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
-
-  if (!activityData[act]) return;
-
-  activityData[act].forEach(i => {
+  if (!activities[activity.value]) return;
+  activities[activity.value].forEach(i => {
     item.innerHTML += `<option value="${i}">${i}</option>`;
   });
 }
 
-function submitForm() {
-  const data = {
-    userId: profile.userId,
-    displayName: profile.displayName,
-    pictureUrl: profile.pictureUrl,
-    name: name.value,
-    phone: phone.value,
-    activity: activity.value,
-    item: item.value
-  };
+function save() {
+  loading.style.display = "block";
 
   fetch(GAS_URL, {
     method: "POST",
-    body: JSON.stringify(data)
-  }).then(() => alert("บันทึกเรียบร้อย"));
+    body: JSON.stringify({
+      userId: profile.userId,
+      displayName: profile.displayName,
+      pictureUrl: profile.pictureUrl,
+      inputName: inputName.value,
+      phone: phone.value,
+      activity: activity.value,
+      item: item.value
+    })
+  }).then(() => {
+    loading.style.display = "none";
+    formPage.style.display = "none";
+    summary.style.display = "block";
+
+    sumText.innerHTML =
+      `👤 ${inputName.value}<br>
+       📞 ${phone.value}<br>
+       🎯 ${activity.value}<br>
+       📌 ${item.value}`;
+  });
+}
+
+function resetForm() {
+  summary.style.display = "none";
+  formPage.style.display = "block";
+  inputName.value = "";
+  phone.value = "";
+  activity.value = "";
+  item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
 }
 
 init();
