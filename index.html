@@ -1,47 +1,97 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Form v1.4</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ลงทะเบียนกิจกรรม</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
-body {
-  font-family: sans-serif;
-  background: linear-gradient(135deg,#4facfe,#00f2fe);
+body{
   margin:0;
-  padding:20px;
+  font-family: "Prompt", sans-serif;
+  background: linear-gradient(135deg,#43cea2,#185a9d);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.card {
+
+.card{
   background:#fff;
-  border-radius:16px;
-  padding:20px;
-  max-width:420px;
-  margin:auto;
-}
-h2 { text-align:center; }
-label { margin-top:10px; display:block; font-weight:bold; }
-input, select, button {
   width:100%;
-  padding:12px;
-  margin-top:5px;
-  border-radius:10px;
-  border:1px solid #ccc;
+  max-width:420px;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:10px;
+  color:#185a9d;
+}
+
+.profile{
+  text-align:center;
+  font-size:15px;
+  color:#555;
+  margin-bottom:15px;
+}
+
+label{
+  font-weight:600;
+  margin-top:12px;
+  display:block;
+  color:#333;
+}
+
+input, select{
+  width:100%;
+  padding:13px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  margin-top:6px;
   font-size:16px;
 }
-button {
-  background:#4facfe;
-  color:#fff;
-  border:none;
-  margin-top:20px;
+
+input:focus, select:focus{
+  outline:none;
+  border-color:#43cea2;
 }
-button:disabled { opacity:0.6; }
-#summary { display:none; }
-.loading {
-  text-align:center;
+
+button{
+  width:100%;
+  margin-top:20px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-size:17px;
+  font-weight:600;
+  background:linear-gradient(135deg,#43cea2,#185a9d);
   color:#fff;
+}
+
+button:disabled{
+  opacity:.6;
+}
+
+#loading{
+  text-align:center;
+  margin-top:10px;
+  color:#185a9d;
+}
+
+#summary{
+  display:none;
+  text-align:center;
+}
+
+.success{
+  font-size:18px;
+  color:#185a9d;
+  margin-bottom:10px;
 }
 </style>
 </head>
@@ -51,14 +101,17 @@ button:disabled { opacity:0.6; }
 <div class="card" id="formBox">
   <h2>ลงทะเบียนกิจกรรม</h2>
 
-  <p><strong>LINE :</strong> <span id="displayName">กำลังโหลด...</span></p>
+  <div class="profile">
+    LINE: <strong id="displayName">กำลังโหลด...</strong>
+  </div>
 
   <label>ชื่อ-นามสกุล</label>
   <input id="fullname" placeholder="กรอกชื่อ-นามสกุล">
 
   <label>เบอร์โทร</label>
-  <input id="phone" type="tel" inputmode="numeric" maxlength="10">
+  <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="0XXXXXXXXX">
 
+  <!-- ✅ รูปแบบกิจกรรมเหมือน v1.4 -->
   <label>กิจกรรม</label>
   <select id="activity" onchange="updateItems()">
     <option value="">-- เลือกกิจกรรม --</option>
@@ -70,15 +123,14 @@ button:disabled { opacity:0.6; }
   </select>
 
   <button id="saveBtn" onclick="submitForm()">บันทึกข้อมูล</button>
+  <div id="loading" style="display:none;">⏳ กำลังบันทึก...</div>
 </div>
 
 <div class="card" id="summary">
-  <h2>✅ บันทึกเรียบร้อย</h2>
+  <div class="success">✅ บันทึกข้อมูลเรียบร้อย</div>
   <p id="sumText"></p>
   <button onclick="resetForm()">➕ เพิ่มข้อมูลใหม่</button>
 </div>
-
-<p class="loading" id="loading" style="display:none;">⏳ กำลังบันทึก...</p>
 
 <script>
 const LIFF_ID = "2008940385-hkDtMTsg";
@@ -87,10 +139,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10
 let lineProfile = {};
 let activityMap = {};
 
-async function init() {
+async function init(){
   await liff.init({ liffId: LIFF_ID });
 
-  if (!liff.isLoggedIn()) {
+  if(!liff.isLoggedIn()){
     liff.login();
     return;
   }
@@ -102,63 +154,70 @@ async function init() {
   loadActivity();
 }
 
-function loadActivity() {
+function loadActivity(){
   fetch(GAS_URL + "?mode=activity")
-    .then(res => res.json())
+    .then(r => r.json())
     .then(data => {
       activityMap = data;
       const act = document.getElementById("activity");
       act.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
-      Object.keys(data).forEach(a => {
+
+      Object.keys(data).forEach(a=>{
         act.innerHTML += `<option value="${a}">${a}</option>`;
       });
     });
 }
 
-document.getElementById("activity").onchange = function() {
-  const items = activityMap[this.value] || [];
+/* ✅ ฟังก์ชันแบบ v1.4 */
+function updateItems(){
+  const activity = document.getElementById("activity").value;
   const item = document.getElementById("item");
-  item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
-  items.forEach(i => {
-    item.innerHTML += `<option value="${i}">${i}</option>`;
-  });
-};
 
-function submitForm() {
-  document.getElementById("loading").style.display = "block";
-  document.getElementById("saveBtn").disabled = true;
+  item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
+
+  if(activityMap[activity]){
+    activityMap[activity].forEach(i=>{
+      item.innerHTML += `<option value="${i}">${i}</option>`;
+    });
+  }
+}
+
+function submitForm(){
+  document.getElementById("loading").style.display="block";
+  document.getElementById("saveBtn").disabled=true;
 
   const data = {
     userId: lineProfile.userId,
     displayName: lineProfile.displayName,
-    profilename: lineProfile.pictureUrl, // 👈 เก็บรูป แต่ไม่แสดง
+    profilename: lineProfile.pictureUrl,
     inputName: document.getElementById("fullname").value,
     phone: document.getElementById("phone").value,
     activity: document.getElementById("activity").value,
     item: document.getElementById("item").value
   };
 
-  fetch(GAS_URL, {
+  fetch(GAS_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify(data)
   })
-  .then(res => res.json())
-  .then(r => {
-    document.getElementById("loading").style.display = "none";
-    if (r.success) {
-      document.getElementById("formBox").style.display = "none";
-      document.getElementById("summary").style.display = "block";
+  .then(r=>r.json())
+  .then(res=>{
+    document.getElementById("loading").style.display="none";
+
+    if(res.success){
+      document.getElementById("formBox").style.display="none";
+      document.getElementById("summary").style.display="block";
       document.getElementById("sumText").innerText =
         `${data.inputName}\n${data.activity} - ${data.item}`;
-    } else {
+    }else{
       alert("บันทึกไม่สำเร็จ");
-      document.getElementById("saveBtn").disabled = false;
+      document.getElementById("saveBtn").disabled=false;
     }
   });
 }
 
-function resetForm() {
+function resetForm(){
   location.reload();
 }
 
