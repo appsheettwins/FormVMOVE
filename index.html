@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>สำรองที่นั่ง | LIFF v2.1.3</title>
+<title>สำรองที่นั่ง | LIFF v2.1.4</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
@@ -81,7 +81,6 @@
 <body>
 
 <div class="card">
-
 <h1>สำรองที่นั่งร่วมกิจกรรมธรรมยาตรา</h1>
 
 <div id="formSection">
@@ -119,7 +118,6 @@
 
   <button onclick="resetForm()">➕ เพิ่มข้อมูลใหม่</button>
 </div>
-
 </div>
 
 <script>
@@ -146,12 +144,25 @@ async function initLIFF() {
 
 async function loadActivities() {
   const res = await fetch(GAS_URL + "?mode=activity");
-  const rows = await res.json(); // ⬅️ เป็น array ล้วน
+  const rows = await res.json();
 
   rows.forEach(r => {
-    const activityName = r[0];   // คอลัม A
-    const itemName = r[1];       // คอลัม B
-    const travelTime = r[2];     // คอลัม C
+    let activityName, itemName, travelTime;
+
+    // 🔥 รองรับทั้ง array และ object
+    if (Array.isArray(r)) {
+      // ข้าม header
+      if (r[0] === "activity") return;
+      activityName = r[0];
+      itemName = r[1];
+      travelTime = r[2];
+    } else {
+      activityName = r.activity;
+      itemName = r.item;
+      travelTime = r.travelTime;
+    }
+
+    if (!activityName || !itemName) return;
 
     if (!activityMap[activityName]) {
       activityMap[activityName] = [];
