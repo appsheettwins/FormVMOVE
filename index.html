@@ -23,17 +23,13 @@ body {
   padding: 20px;
   box-shadow: 0 15px 30px rgba(0,0,0,.15);
 }
-.profile {
-  text-align: center;
-}
+.profile { text-align:center; }
 .profile img {
   width: 90px;
   height: 90px;
   border-radius: 50%;
 }
-.profile h3 {
-  margin: 8px 0;
-}
+.profile h3 { margin: 8px 0; }
 input, select {
   width: 100%;
   padding: 14px;
@@ -81,7 +77,7 @@ button {
     <option value="">เลือกรายการ</option>
   </select>
 
-  <button onclick="saveData()">บันทึกข้อมูล</button>
+  <button id="saveBtn">บันทึกข้อมูล</button>
 </div>
 
 <div class="card hidden" id="summaryBox">
@@ -93,8 +89,8 @@ button {
 </div>
 
 <script>
-const LIFF_ID = "2008940385-hkDtMTsg";
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
+const LIFF_ID = "YOUR_LIFF_ID";
+const GAS_URL = "YOUR_GAS_WEBAPP_URL";
 
 let profileData = {};
 let activityMap = {};
@@ -108,10 +104,12 @@ async function init() {
   }
 
   profileData = await liff.getProfile();
-  picture.src = profileData.pictureUrl;
-  lineName.textContent = profileData.displayName;
+  document.getElementById("picture").src = profileData.pictureUrl;
+  document.getElementById("lineName").textContent = profileData.displayName;
 
   await loadActivities();
+
+  document.getElementById("saveBtn").addEventListener("click", saveData);
 }
 
 async function loadActivities() {
@@ -148,35 +146,38 @@ async function loadActivities() {
 }
 
 async function saveData() {
-  const fullName = fullName.value;
-  const phone = phone.value;
-  const activity = activitySelect.value;
-  const subActivity = subActivitySelect.value;
+  try {
+    const fullName = document.getElementById("fullName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const activity = document.getElementById("activitySelect").value;
+    const subActivity = document.getElementById("subActivitySelect").value;
 
-  if (!fullName || phone.length !== 10 || !activity || !subActivity) {
-    alert("กรุณากรอกข้อมูลให้ครบ");
-    return;
-  }
+    if (!fullName || phone.length !== 10 || !activity || !subActivity) {
+      alert("กรุณากรอกข้อมูลให้ครบ");
+      return;
+    }
 
-  fetch(GAS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: profileData.userId,
-      lineName: profileData.displayName,
-      pictureUrl: profileData.pictureUrl,
-      fullName,
-      phone,
-      activity,
-      subActivity
-    })
-  });
+    // 1️⃣ บันทึกลง Sheet
+    await fetch(GAS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: profileData.userId,
+        lineName: profileData.displayName,
+        pictureUrl: profileData.pictureUrl,
+        fullName,
+        phone,
+        activity,
+        subActivity
+      })
+    });
 
-  if (liff.isInClient()) {
-    await liff.sendMessages([{
-      type: "text",
-      text:
+    // 2️⃣ ส่งข้อความเข้า LINE
+    if (liff.isInClient()) {
+      await liff.sendMessages([{
+        type: "text",
+        text:
 `📋 สรุปการลงทะเบียน
 👤 ${fullName}
 📞 ${phone}
@@ -184,26 +185,34 @@ async function saveData() {
 📝 ${subActivity}
 
 ✅ บันทึกเรียบร้อย`
-    }]);
-  }
+      }]);
+    }
 
-  summaryText.innerText =
+    // 3️⃣ แสดงหน้าสรุป
+    document.getElementById("summaryText").innerText =
 `ชื่อ: ${fullName}
 กิจกรรม: ${activity}
 รายการ: ${subActivity}`;
 
-  formBox.classList.add("hidden");
-  summaryBox.classList.remove("hidden");
+    document.getElementById("formBox").classList.add("hidden");
+    document.getElementById("summaryBox").classList.remove("hidden");
+
+  } catch (err) {
+    alert("บันทึกไม่สำเร็จ กรุณาลองใหม่");
+    console.error(err);
+  }
 }
 
 function newForm() {
-  fullName.value = "";
-  phone.value = "";
-  activitySelect.value = "";
-  subActivitySelect.innerHTML = `<option value="">เลือกรายการ</option>`;
-  subActivitySelect.disabled = true;
-  summaryBox.classList.add("hidden");
-  formBox.classList.remove("hidden");
+  document.getElementById("fullName").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("activitySelect").value = "";
+  const sub = document.getElementById("subActivitySelect");
+  sub.innerHTML = `<option value="">เลือกรายการ</option>`;
+  sub.disabled = true;
+
+  document.getElementById("summaryBox").classList.add("hidden");
+  document.getElementById("formBox").classList.remove("hidden");
 }
 
 init();
