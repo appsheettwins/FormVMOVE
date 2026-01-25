@@ -144,15 +144,17 @@ async function save(){
   saveBtn.disabled = true;
   loading.style.display = "block";
 
-  const payload = {
-    userId: profile.userId,
-    displayName: profile.displayName,
-    profilename: profile.displayName,
-    inputName: inputName.value,
-    phone: phone.value,
-    activity: activity.value,
-    item: item.value
-  };
+  const lineProfileLink = `https://line.me/ti/p/~${profile.userId}`;
+
+const payload = {
+  userId: profile.userId,
+  displayName: profile.displayName,
+  profilename: lineProfileLink, // ✅ เก็บเป็นลิงก์โปรไฟล์
+  inputName: inputName.value,
+  phone: phone.value,
+  activity: activity.value,
+  item: item.value
+};
 
   try {
     await fetch(GAS_URL, {
