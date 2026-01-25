@@ -23,7 +23,7 @@
 
 <script>
   const LIFF_ID = "PUT_YOUR_LIFF_ID";
-  const GAS_URL = "PUT_YOUR_GAS_WEBAPP_URL";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
   async function init() {
     try {
