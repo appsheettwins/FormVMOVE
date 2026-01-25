@@ -9,17 +9,17 @@
 
 <style>
 body {
+  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f4f8;
-  margin: 0;
 }
 .container {
   max-width: 420px;
   margin: auto;
-  padding: 20px;
+  padding: 16px;
 }
 .card {
-  background: white;
+  background: #fff;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,.1);
@@ -31,8 +31,15 @@ body {
   width: 90px;
   border-radius: 50%;
 }
+.profile p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #555;
+  word-break: break-all;
+}
 h2 {
   text-align: center;
+  margin-top: 10px;
 }
 input, select, button {
   width: 100%;
@@ -41,6 +48,9 @@ input, select, button {
   border-radius: 10px;
   border: 1px solid #ddd;
   font-size: 16px;
+}
+input[readonly] {
+  background: #f1f1f1;
 }
 button {
   background: #06c755;
@@ -66,9 +76,11 @@ button.secondary {
 
 <!-- FORM -->
 <div class="card" id="formCard">
+
   <div class="profile">
     <img id="picture">
-    <p id="lineName"></p>
+    <p><b id="lineName"></b></p>
+    <p id="lineUserId"></p>
   </div>
 
   <h2>แบบฟอร์มลงทะเบียน</h2>
@@ -90,8 +102,11 @@ button.secondary {
 <!-- SUMMARY -->
 <div class="card hidden" id="summaryCard">
   <h2>สรุปข้อมูล</h2>
+
   <div class="summary">
-    <p><b>ชื่อ:</b> <span id="sName"></span></p>
+    <p><b>ชื่อ LINE:</b> <span id="sLineName"></span></p>
+    <p><b>UserId:</b> <span id="sUserId"></span></p>
+    <p><b>ชื่อผู้กรอก:</b> <span id="sName"></span></p>
     <p><b>เบอร์:</b> <span id="sPhone"></span></p>
     <p><b>กิจกรรม:</b> <span id="sActivity"></span></p>
   </div>
@@ -102,11 +117,12 @@ button.secondary {
 </div>
 
 <script>
-const LIFF_ID = "https://liff.line.me/2008940385-hkDtMTsg";
+const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
 let userId = "";
 let lineName = "";
+let pictureUrl = "";
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
@@ -119,9 +135,11 @@ async function init() {
   const profile = await liff.getProfile();
   userId = profile.userId;
   lineName = profile.displayName;
+  pictureUrl = profile.pictureUrl;
 
-  document.getElementById("picture").src = profile.pictureUrl;
+  document.getElementById("picture").src = pictureUrl;
   document.getElementById("lineName").textContent = lineName;
+  document.getElementById("lineUserId").textContent = userId;
 }
 
 function submitForm() {
@@ -141,12 +159,15 @@ function submitForm() {
     body: JSON.stringify({
       userId: userId,
       lineName: lineName,
+      pictureUrl: pictureUrl,
       formName: name,
       phone: phone,
       activity: activity
     })
   });
 
+  document.getElementById("sLineName").textContent = lineName;
+  document.getElementById("sUserId").textContent = userId;
   document.getElementById("sName").textContent = name;
   document.getElementById("sPhone").textContent = phone;
   document.getElementById("sActivity").textContent = activity;
