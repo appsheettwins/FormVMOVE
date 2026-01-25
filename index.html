@@ -2,26 +2,53 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>LIFF Form v1.2</title>
+<title>LIFF Form v1.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
-body { font-family: sans-serif; background:#f2f6ff; }
-.card {
-  max-width:420px; margin:auto; background:#fff;
-  padding:20px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.1);
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#6366f1,#22d3ee);
 }
-img { width:90px; border-radius:50%; display:block; margin:auto; }
-h3{text-align:center}
-label{margin-top:10px; display:block}
-input,select,button{
-  width:100%; padding:10px; margin-top:5px;
-  border-radius:8px; border:1px solid #ccc;
+.card{
+  max-width:420px;
+  margin:20px auto;
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 15px 40px rgba(0,0,0,.2);
 }
-button{background:#4f46e5;color:#fff;font-size:16px;border:none}
-.summary{display:none}
+img{
+  width:90px;
+  border-radius:50%;
+  display:block;
+  margin:auto;
+}
+h3{text-align:center;margin:10px 0}
+label{margin-top:12px;display:block;font-weight:600}
+input,select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:16px;
+}
+button{
+  width:100%;
+  margin-top:16px;
+  padding:14px;
+  font-size:17px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;
+}
+.summary{display:none;text-align:center}
+.summary p{margin:6px 0}
 </style>
 </head>
 
@@ -33,10 +60,10 @@ button{background:#4f46e5;color:#fff;font-size:16px;border:none}
   <h3 id="lineName"></h3>
 
   <label>ชื่อ-นามสกุล</label>
-  <input id="inputName">
+  <input id="inputName" placeholder="กรอกชื่อ-นามสกุล">
 
   <label>เบอร์โทร</label>
-  <input id="phone" type="tel" maxlength="10">
+  <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="0xxxxxxxxx">
 
   <label>กิจกรรม</label>
   <select id="activity" onchange="updateItems()">
@@ -52,9 +79,9 @@ button{background:#4f46e5;color:#fff;font-size:16px;border:none}
 </div>
 
 <div id="summary" class="summary">
-  <h3>✅ สรุปข้อมูล</h3>
-  <div id="sumText"></div>
-  <button onclick="resetForm()">เพิ่มข้อมูลใหม่</button>
+  <h3>✅ บันทึกสำเร็จ</h3>
+  <p id="sum"></p>
+  <button onclick="resetForm()">➕ เพิ่มข้อมูลใหม่</button>
 </div>
 
 </div>
@@ -63,77 +90,70 @@ button{background:#4f46e5;color:#fff;font-size:16px;border:none}
 const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
-let profile = {};
-let activityMap = {};
+let profile={}, activityMap={};
 
-async function init() {
+async function init(){
   await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) return liff.login();
+  if(!liff.isLoggedIn()) return liff.login();
 
   profile = await liff.getProfile();
-  document.getElementById("pic").src = profile.pictureUrl;
-  document.getElementById("lineName").innerText = profile.displayName;
+  pic.src = profile.pictureUrl;
+  lineName.innerText = profile.displayName;
 
   loadActivities();
 }
 
-async function loadActivities() {
-  const res = await fetch(GAS_URL + "?mode=activity");
-  const data = await res.json();
+async function loadActivities(){
+  const r = await fetch(GAS_URL+"?mode=activity");
+  const data = await r.json();
 
   activityMap = {};
-  data.forEach(r => {
-    if (!activityMap[r.activity]) activityMap[r.activity] = [];
-    activityMap[r.activity].push(r.item);
+  data.forEach(x=>{
+    if(!activityMap[x.activity]) activityMap[x.activity]=[];
+    activityMap[x.activity].push(x.item);
   });
 
-  const act = document.getElementById("activity");
   Object.keys(activityMap).forEach(a=>{
-    act.innerHTML += `<option value="${a}">${a}</option>`;
+    activity.innerHTML += `<option value="${a}">${a}</option>`;
   });
 }
 
-function updateItems() {
-  const act = activity.value;
-  item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
-  if (!activityMap[act]) return;
-  activityMap[act].forEach(i=>{
+function updateItems(){
+  item.innerHTML = `<option value="">-- เลือกรายการ --</option>`;
+  (activityMap[activity.value]||[]).forEach(i=>{
     item.innerHTML += `<option value="${i}">${i}</option>`;
   });
 }
 
-async function save() {
-  const payload = {
-    userId: profile.userId,
-    displayName: profile.displayName,
-    profilename: profile.displayName,
-    inputName: inputName.value,
-    phone: phone.value,
-    activity: activity.value,
-    item: item.value
+async function save(){
+  const payload={
+    userId:profile.userId,
+    displayName:profile.displayName,
+    profilename:profile.displayName,
+    inputName:inputName.value,
+    phone:phone.value,
+    activity:activity.value,
+    item:item.value
   };
 
-  const res = await fetch(GAS_URL,{
+  const r = await fetch(GAS_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(payload)
+    body:JSON.stringify(payload)
   });
-
-  const r = await res.json();
-  if (!r.success) return alert("บันทึกไม่สำเร็จ");
+  const res = await r.json();
+  if(!res.success) return alert("บันทึกไม่สำเร็จ");
 
   form.style.display="none";
   summary.style.display="block";
-  sumText.innerHTML = `
+  sum.innerHTML=`
   👤 ${payload.inputName}<br>
   📞 ${payload.phone}<br>
   🎯 ${payload.activity}<br>
   📌 ${payload.item}`;
 }
 
-function resetForm(){
-  location.reload();
-}
+function resetForm(){ location.reload(); }
 
 window.onload = init;
 </script>
