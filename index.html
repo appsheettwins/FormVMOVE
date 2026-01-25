@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>LIFF Form V1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
@@ -62,7 +61,6 @@ button {
 
 <div class="container">
 
-<!-- ===== FORM ===== -->
 <div class="card" id="formBox">
   <div class="profile">
     <img id="picture">
@@ -71,20 +69,21 @@ button {
 
   <input id="fullName" placeholder="ชื่อ - นามสกุล">
 
-  <input id="phone"
-    type="tel"
-    inputmode="numeric"
-    maxlength="10"
+  <input id="phone" type="tel" inputmode="numeric" maxlength="10"
     placeholder="เบอร์โทรศัพท์ 10 หลัก"
     oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
 
-  <select id="activity"></select>
-  <select id="subActivity"></select>
+  <select id="activitySelect">
+    <option value="">เลือกกิจกรรม</option>
+  </select>
+
+  <select id="subActivitySelect" disabled>
+    <option value="">เลือกรายการ</option>
+  </select>
 
   <button onclick="saveData()">บันทึกข้อมูล</button>
 </div>
 
-<!-- ===== SUMMARY ===== -->
 <div class="card hidden" id="summaryBox">
   <h2>บันทึกสำเร็จ ✅</h2>
   <p id="summaryText"></p>
@@ -98,7 +97,7 @@ const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
 
 let profileData = {};
-let activityData = {};
+let activityMap = {};
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
@@ -112,38 +111,53 @@ async function init() {
   picture.src = profileData.pictureUrl;
   lineName.textContent = profileData.displayName;
 
-  loadActivities();
+  await loadActivities();
 }
 
 async function loadActivities() {
   const res = await fetch(GAS_URL + "?mode=activity");
-  activityData = await res.json();
+  activityMap = await res.json();
 
-  activity.innerHTML = `<option value="">เลือกกิจกรรม</option>`;
-  Object.keys(activityData).forEach(a => {
-    activity.innerHTML += `<option>${a}</option>`;
+  const actSel = document.getElementById("activitySelect");
+  actSel.innerHTML = `<option value="">เลือกกิจกรรม</option>`;
+
+  Object.keys(activityMap).forEach(act => {
+    const opt = document.createElement("option");
+    opt.value = act;
+    opt.textContent = act;
+    actSel.appendChild(opt);
   });
 
-  activity.onchange = () => {
-    subActivity.innerHTML = `<option value="">เลือกรายการ</option>`;
-    (activityData[activity.value] || []).forEach(s => {
-      subActivity.innerHTML += `<option>${s}</option>`;
+  actSel.onchange = () => {
+    const subSel = document.getElementById("subActivitySelect");
+    subSel.innerHTML = `<option value="">เลือกรายการ</option>`;
+    subSel.disabled = true;
+
+    const list = activityMap[actSel.value];
+    if (!list) return;
+
+    list.forEach(sub => {
+      const opt = document.createElement("option");
+      opt.value = sub;
+      opt.textContent = sub;
+      subSel.appendChild(opt);
     });
+
+    subSel.disabled = false;
   };
 }
 
 async function saveData() {
-  const fullName = document.getElementById("fullName").value;
-  const phone = document.getElementById("phone").value;
-  const act = activity.value;
-  const sub = subActivity.value;
+  const fullName = fullName.value;
+  const phone = phone.value;
+  const activity = activitySelect.value;
+  const subActivity = subActivitySelect.value;
 
-  if (!fullName || phone.length !== 10 || !act || !sub) {
+  if (!fullName || phone.length !== 10 || !activity || !subActivity) {
     alert("กรุณากรอกข้อมูลให้ครบ");
     return;
   }
 
-  // 1️⃣ บันทึกลง Sheet
   fetch(GAS_URL, {
     method: "POST",
     mode: "no-cors",
@@ -154,12 +168,11 @@ async function saveData() {
       pictureUrl: profileData.pictureUrl,
       fullName,
       phone,
-      activity: act,
-      subActivity: sub
+      activity,
+      subActivity
     })
   });
 
-  // 2️⃣ ส่งข้อความสรุปเข้า LINE
   if (liff.isInClient()) {
     await liff.sendMessages([{
       type: "text",
@@ -167,18 +180,17 @@ async function saveData() {
 `📋 สรุปการลงทะเบียน
 👤 ${fullName}
 📞 ${phone}
-🎯 ${act}
-📝 ${sub}
+🎯 ${activity}
+📝 ${subActivity}
 
 ✅ บันทึกเรียบร้อย`
     }]);
   }
 
-  // 3️⃣ หน้าสรุปเดิม
   summaryText.innerText =
-    `ชื่อ: ${fullName}
-กิจกรรม: ${act}
-รายการ: ${sub}`;
+`ชื่อ: ${fullName}
+กิจกรรม: ${activity}
+รายการ: ${subActivity}`;
 
   formBox.classList.add("hidden");
   summaryBox.classList.remove("hidden");
@@ -187,8 +199,9 @@ async function saveData() {
 function newForm() {
   fullName.value = "";
   phone.value = "";
-  activity.value = "";
-  subActivity.innerHTML = "";
+  activitySelect.value = "";
+  subActivitySelect.innerHTML = `<option value="">เลือกรายการ</option>`;
+  subActivitySelect.disabled = true;
   summaryBox.classList.add("hidden");
   formBox.classList.remove("hidden");
 }
