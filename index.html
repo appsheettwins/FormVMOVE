@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>LIFF User Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    body { font-family: sans-serif; }
+    img { width: 120px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+
+<h2>ข้อมูลผู้ใช้ LINE</h2>
+<p id="status">กำลังเชื่อมต่อ LINE...</p>
+
+<img id="picture">
+<p id="name"></p>
+
+<script>
+  const LIFF_ID = "2008940385-hkDtMTsg";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
+
+  async function init() {
+
+    if (!liff.isInClient()) {
+      document.getElementById("status").textContent =
+        "❌ กรุณาเปิดหน้านี้จาก LINE เท่านั้น";
+      return;
+    }
+
+    try {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+
+      document.getElementById("picture").src = profile.pictureUrl;
+      document.getElementById("name").textContent = profile.displayName;
+      document.getElementById("status").textContent = "เชื่อมต่อ LINE สำเร็จ ✅";
+
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: profile.userId,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl
+        })
+      });
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").textContent = "เกิดข้อผิดพลาด ❌";
+    }
+  }
+
+  window.onload = init;
+</script>
+
+
+</body>
+</html>
