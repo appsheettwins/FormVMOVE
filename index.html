@@ -114,13 +114,14 @@ button:disabled{
   <!-- ✅ รูปแบบกิจกรรมเหมือน v1.4 -->
   <label>กิจกรรม</label>
   <select id="activity" onchange="updateItems()">
-    <option value="">-- เลือกกิจกรรม --</option>
+  <option value="">-- เลือกกิจกรรม --</option>
   </select>
 
   <label>รายการ</label>
   <select id="item">
-    <option value="">-- เลือกรายการ --</option>
+  <option value="">-- เลือกรายการ --</option>
   </select>
+
 
   <button id="saveBtn" onclick="submitForm()">บันทึกข้อมูล</button>
   <div id="loading" style="display:none;">⏳ กำลังบันทึก...</div>
@@ -154,29 +155,29 @@ async function init(){
   loadActivity();
 }
 
-function loadActivity(){
+function loadActivity() {
   fetch(GAS_URL + "?mode=activity")
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => {
       activityMap = data;
       const act = document.getElementById("activity");
       act.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
 
-      Object.keys(data).forEach(a=>{
-        act.innerHTML += `<option value="${a}">${a}</option>`;
+      Object.keys(activityMap).forEach(name => {
+        act.innerHTML += `<option value="${name}">${name}</option>`;
       });
     });
 }
 
 /* ✅ ฟังก์ชันแบบ v1.4 */
-function updateItems(){
+function updateItems() {
   const activity = document.getElementById("activity").value;
   const item = document.getElementById("item");
 
   item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
 
-  if(activityMap[activity]){
-    activityMap[activity].forEach(i=>{
+  if (activityMap[activity]) {
+    activityMap[activity].forEach(i => {
       item.innerHTML += `<option value="${i}">${i}</option>`;
     });
   }
