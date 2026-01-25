@@ -60,10 +60,14 @@ button:disabled { opacity:0.6; }
   <input id="phone" type="tel" inputmode="numeric" maxlength="10">
 
   <label>กิจกรรม</label>
-  <select id="activity"></select>
+  <select id="activity" onchange="updateItems()">
+    <option value="">-- เลือกกิจกรรม --</option>
+  </select>
 
   <label>รายการ</label>
-  <select id="item"></select>
+  <select id="item">
+    <option value="">-- เลือกรายการ --</option>
+  </select>
 
   <button id="saveBtn" onclick="submitForm()">บันทึกข้อมูล</button>
 </div>
