@@ -69,7 +69,7 @@ button {
   <input id="phone" type="tel" inputmode="numeric" maxlength="10">
 
   <label>กิจกรรม</label>
-  <select id="activity" onchange="updateItems()">
+  <select id="activity">
     <option value="">-- เลือกกิจกรรม --</option>
   </select>
 
@@ -96,7 +96,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10
 
 let profile = {};
 let activityMap = {};
-let rawActivity = [];
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
@@ -109,35 +108,57 @@ async function init() {
   linePic.src = profile.pictureUrl;
   lineName.textContent = profile.displayName;
 
-  loadActivityFromSheet();
+  await loadActivities();
 }
 
-async function loadActivityFromSheet() {
-  const res = await fetch(GAS_URL + "?mode=activity");
-  rawActivity = await res.json();
+async function loadActivities() {
+  try {
+    const res = await fetch(GAS_URL + "?mode=activity");
+    const data = await res.json();
 
-  activityMap = {};
-  rawActivity.forEach(r => {
-    if (!activityMap[r.activity]) activityMap[r.activity] = [];
-    activityMap[r.activity].push(r.item);
-  });
+    if (!Array.isArray(data)) {
+      console.error("Activity data is not array", data);
+      alert("โหลดกิจกรรมไม่สำเร็จ (ข้อมูลไม่ถูกต้อง)");
+      return;
+    }
 
-  activity.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
-  Object.keys(activityMap).forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a;
-    opt.textContent = a;
-    activity.appendChild(opt);
-  });
+    activityMap = {};
+    data.forEach(row => {
+      const act = row.activity || row.Activity;
+      const itm = row.item || row.Item;
+      if (!act || !itm) return;
+
+      if (!activityMap[act]) activityMap[act] = [];
+      activityMap[act].push(itm);
+    });
+
+    const activitySelect = document.getElementById("activity");
+    activitySelect.innerHTML = '<option value="">-- เลือกกิจกรรม --</option>';
+
+    Object.keys(activityMap).forEach(act => {
+      const opt = document.createElement("option");
+      opt.value = act;
+      opt.textContent = act;
+      activitySelect.appendChild(opt);
+    });
+
+    activitySelect.onchange = updateItems;
+
+  } catch (err) {
+    console.error(err);
+    alert("เชื่อมต่อข้อมูลกิจกรรมไม่ได้");
+  }
 }
 
 function updateItems() {
-  item.innerHTML = '<option value="">-- เลือกรายการ --</option>';
-  (activityMap[activity.value] || []).forEach(i => {
+  const itemSelect = document.getElementById("item");
+  itemSelect.innerHTML = '<option value="">-- เลือกรายการ --</option>';
+
+  (activityMap[activity.value] || []).forEach(it => {
     const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i;
-    item.appendChild(opt);
+    opt.value = it;
+    opt.textContent = it;
+    itemSelect.appendChild(opt);
   });
 }
 
