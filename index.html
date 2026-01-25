@@ -69,14 +69,15 @@ button {
   <input id="phone" type="tel" inputmode="numeric" maxlength="10">
 
   <label>กิจกรรม</label>
-  <select id="activity">
-    <option value="">-- เลือกกิจกรรม --</option>
-  </select>
+<select id="activity" onchange="updateItems()">
+  <option value="">-- เลือกกิจกรรม --</option>
+</select>
 
-  <label>รายการ</label>
-  <select id="item">
-    <option value="">-- เลือกรายการ --</option>
-  </select>
+<label>รายการ</label>
+<select id="item">
+  <option value="">-- เลือกรายการ --</option>
+</select>
+
 
   <button onclick="saveData()">บันทึกข้อมูล</button>
 </div>
