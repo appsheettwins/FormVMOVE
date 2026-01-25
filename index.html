@@ -147,10 +147,11 @@ async function save(){
   form.style.display="none";
   summary.style.display="block";
   sum.innerHTML=`
-  👤 ${payload.inputName}<br>
-  📞 ${payload.phone}<br>
-  🎯 ${payload.activity}<br>
-  📌 ${payload.item}`;
+    👤 ${payload.inputName}<br>
+    📞 ${payload.phone}<br>
+    🎯 ${payload.activity}<br>
+    📌 ${payload.item}
+  `;
 }
 
 function resetForm(){ location.reload(); }
