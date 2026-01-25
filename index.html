@@ -9,51 +9,94 @@
 
 <style>
 body {
-  font-family: sans-serif;
-  background: #f5f5f5;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #06c755, #00bfa5);
+  min-height: 100vh;
 }
-.card {
+
+.container {
   max-width: 420px;
-  margin: 20px auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
+  margin: auto;
+  padding: 16px;
 }
+
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,.15);
+}
+
 .profile {
   text-align: center;
+  margin-bottom: 10px;
 }
 .profile img {
-  width: 100px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
 }
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+.profile h3 {
+  margin: 8px 0 0;
+  color: #333;
 }
-button {
-  background: #06c755;
-  color: #fff;
-  border: none;
+
+h2 {
+  text-align: center;
+  color: #06c755;
+}
+
+input, select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
   font-size: 16px;
 }
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  background: #06c755;
+  color: #fff;
+}
+
+button.secondary {
+  background: #00bfa5;
+}
+
 .hidden {
   display: none;
+}
+
+.summary p {
+  font-size: 16px;
+  margin: 10px 0;
 }
 </style>
 </head>
 
 <body>
 
-<!-- FORM -->
+<div class="container">
+
+<!-- ===== FORM ===== -->
 <div class="card" id="formBox">
   <div class="profile">
     <img id="picture">
-    <p id="lineName"></p>
-    <small id="userId"></small>
+    <h3 id="lineName"></h3>
   </div>
 
-  <input id="name" placeholder="ชื่อ-นามสกุล">
+  <h2>ลงทะเบียนกิจกรรม</h2>
+
+  <input id="fullName" placeholder="ชื่อ - นามสกุล">
   <input id="phone" placeholder="เบอร์โทรศัพท์">
 
   <select id="activity">
@@ -67,14 +110,19 @@ button {
   <button onclick="saveData()">บันทึกข้อมูล</button>
 </div>
 
-<!-- SUMMARY -->
+<!-- ===== SUMMARY ===== -->
 <div class="card hidden" id="summaryBox">
-  <h3>สรุปข้อมูล</h3>
-  <p><b>ชื่อ:</b> <span id="sName"></span></p>
-  <p><b>เบอร์:</b> <span id="sPhone"></span></p>
-  <p><b>กิจกรรม:</b> <span id="sActivity"></span></p>
+  <h2>สรุปข้อมูล</h2>
 
-  <button onclick="newForm()">เพิ่มข้อมูลใหม่</button>
+  <div class="summary">
+    <p><b>ชื่อ:</b> <span id="sName"></span></p>
+    <p><b>เบอร์:</b> <span id="sPhone"></span></p>
+    <p><b>กิจกรรม:</b> <span id="sActivity"></span></p>
+  </div>
+
+  <button class="secondary" onclick="newForm()">เพิ่มข้อมูลใหม่</button>
+</div>
+
 </div>
 
 <script>
@@ -95,21 +143,19 @@ async function init() {
   profileData = profile;
 
   document.getElementById("picture").src = profile.pictureUrl;
-  document.getElementById("lineName").innerText = profile.displayName;
-  document.getElementById("userId").innerText = profile.userId;
+  document.getElementById("lineName").textContent = profile.displayName;
 }
 
 function saveData() {
-  const name = document.getElementById("name").value;
+  const fullName = document.getElementById("fullName").value;
   const phone = document.getElementById("phone").value;
   const activity = document.getElementById("activity").value;
 
-  if (!name || !phone || !activity) {
+  if (!fullName || !phone || !activity) {
     alert("กรุณากรอกข้อมูลให้ครบ");
     return;
   }
 
-  // 🔥 บันทึกเข้า Sheet ทันที
   fetch(GAS_URL, {
     method: "POST",
     mode: "no-cors",
@@ -118,23 +164,22 @@ function saveData() {
       userId: profileData.userId,
       lineName: profileData.displayName,
       pictureUrl: profileData.pictureUrl,
-      name: name,
+      fullName: fullName,
       phone: phone,
       activity: activity
     })
   });
 
-  // แสดงสรุป
-  document.getElementById("sName").innerText = name;
-  document.getElementById("sPhone").innerText = phone;
-  document.getElementById("sActivity").innerText = activity;
+  document.getElementById("sName").textContent = fullName;
+  document.getElementById("sPhone").textContent = phone;
+  document.getElementById("sActivity").textContent = activity;
 
   document.getElementById("formBox").classList.add("hidden");
   document.getElementById("summaryBox").classList.remove("hidden");
 }
 
 function newForm() {
-  document.getElementById("name").value = "";
+  document.getElementById("fullName").value = "";
   document.getElementById("phone").value = "";
   document.getElementById("activity").value = "";
 
