@@ -84,11 +84,10 @@ button {
 </div>
 
 <script>
-const LIFF_ID = "2008940385-hkDtMTsg";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHGWEA9JYbd1e9-cGnod10qrWuy-hz39IEDd1DhjkCa8bRP-D4qVLkGXNQbV2dcjNI/exec";
+const LIFF_ID = "2008940385-hkDtMTsg";
 
-let profileData = {};
-let activityMap = {};
+let userProfile = {};
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
@@ -98,108 +97,57 @@ async function init() {
     return;
   }
 
-  profileData = await liff.getProfile();
-  picture.src = profileData.pictureUrl;
-  lineName.textContent = profileData.displayName;
-
-  await loadActivities();
-  document.getElementById("saveBtn").addEventListener("click", saveData);
-}
-
-async function loadActivities() {
-  const res = await fetch(GAS_URL + "?mode=activity");
-  activityMap = await res.json();
-
-  const act = document.getElementById("activitySelect");
-  const sub = document.getElementById("subActivitySelect");
-
-  act.innerHTML = `<option value="">เลือกกิจกรรม</option>`;
-  sub.innerHTML = `<option value="">เลือกรายการ</option>`;
-  sub.disabled = true;
-
-  Object.keys(activityMap).forEach(a => {
-    act.innerHTML += `<option value="${a}">${a}</option>`;
-  });
-
-  act.onchange = () => {
-    sub.innerHTML = `<option value="">เลือกรายการ</option>`;
-    const list = activityMap[act.value];
-    if (!list) {
-      sub.disabled = true;
-      return;
-    }
-    list.forEach(s => {
-      sub.innerHTML += `<option value="${s}">${s}</option>`;
-    });
-    sub.disabled = false;
-  };
+  userProfile = await liff.getProfile();
+  document.getElementById("lineName").innerText = userProfile.displayName;
+  document.getElementById("linePic").src = userProfile.pictureUrl;
 }
 
 async function saveData() {
-  const fullName = document.getElementById("fullName").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const activity = document.getElementById("activitySelect").value;
-  const subActivity = document.getElementById("subActivitySelect").value;
+  const phone = document.getElementById("phone").value;
+  const activity = document.getElementById("activity").value;
+  const item = document.getElementById("item").value;
 
-  if (!fullName || phone.length !== 10 || !activity || !subActivity) {
-    alert("กรุณากรอกข้อมูลให้ครบ");
-    return;
-  }
+  const payload = {
+    userId: userProfile.userId,
+    displayName: userProfile.displayName,
+    phone,
+    activity,
+    item
+  };
 
-  // ✅ 1) ส่งข้อมูลเข้า Sheet (ถือว่าสำเร็จทันที)
-  fetch(GAS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: profileData.userId,
-      lineName: profileData.displayName,
-      pictureUrl: profileData.pictureUrl,
-      fullName,
-      phone,
-      activity,
-      subActivity
-    })
-  });
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  // ✅ 2) แสดงหน้าสรุปทันที
-  summaryText.innerText =
-`ชื่อ: ${fullName}
-กิจกรรม: ${activity}
-รายการ: ${subActivity}`;
+    const result = await res.json();
 
-  formBox.classList.add("hidden");
-  summaryBox.classList.remove("hidden");
+    if (result.success) {
+      showSummary(payload);
+    } else {
+      alert("บันทึกไม่สำเร็จ");
+    }
 
-  // ✅ 3) พยายามส่งข้อความเข้า LINE (ไม่ให้พังถ้าส่งไม่ได้)
-  if (liff.isInClient()) {
-    liff.sendMessages([{
-      type: "text",
-      text:
-`📋 สรุปการลงทะเบียน
-👤 ${fullName}
-📞 ${phone}
-🎯 ${activity}
-📝 ${subActivity}
-
-✅ บันทึกเรียบร้อย`
-    }]).catch(err => console.warn("Send LINE failed", err));
+  } catch (err) {
+    alert("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
   }
 }
 
-function newForm() {
-  fullName.value = "";
-  phone.value = "";
-  activitySelect.value = "";
-  subActivitySelect.innerHTML = `<option value="">เลือกรายการ</option>`;
-  subActivitySelect.disabled = true;
+function showSummary(data) {
+  document.getElementById("form").style.display = "none";
+  document.getElementById("summary").style.display = "block";
 
-  summaryBox.classList.add("hidden");
-  formBox.classList.remove("hidden");
+  document.getElementById("sumName").innerText = data.displayName;
+  document.getElementById("sumPhone").innerText = data.phone;
+  document.getElementById("sumAct").innerText = data.activity;
+  document.getElementById("sumItem").innerText = data.item;
 }
 
-init();
+window.onload = init;
 </script>
+
 
 </body>
 </html>
