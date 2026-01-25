@@ -149,7 +149,10 @@ async function save(){
   const payload = {
     userId: profile.userId,
     displayName: profile.displayName,
-    profilename: profile.displayName,
+
+    // ✅ แก้ตรงนี้: เก็บเป็นลิงก์โปรไฟล์ LINE
+    profilename: "https://line.me/ti/p/~" + profile.userId,
+
     inputName: inputName.value,
     phone: phone.value,
     activity: activity.value,
@@ -157,16 +160,13 @@ async function save(){
   };
 
   try {
-    const res = await fetch(GAS_URL, {
+    await fetch(GAS_URL, {
       method: "POST",
-      mode: "no-cors",              // ⭐ สำคัญมากสำหรับ LIFF
-      headers: {
-        "Content-Type": "application/json"
-      },
+      mode: "no-cors",   // สำคัญสำหรับ LIFF
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    // LIFF no-cors จะอ่าน response ไม่ได้ → ถือว่าสำเร็จ
     showSummary(payload);
 
   } catch (err) {
