@@ -79,12 +79,10 @@ button.secondary {
     oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
   >
 
-  <!-- 🔽 กิจกรรม -->
   <select id="activity" onchange="updateItems()">
     <option value="">เลือกกิจกรรม</option>
   </select>
 
-  <!-- 🔽 รายการ -->
   <select id="item">
     <option value="">เลือกรายการ</option>
   </select>
@@ -156,8 +154,8 @@ function updateItems() {
 }
 
 function saveData() {
-  const fullName = fullNameInput.value;
-  const phone = phoneInput.value;
+  const fullName = document.getElementById("fullName").value;
+  const phone = document.getElementById("phone").value;
   const activity = document.getElementById("activity").value;
   const item = document.getElementById("item").value;
 
@@ -181,19 +179,23 @@ function saveData() {
     })
   });
 
-  sName.textContent = fullName;
-  sPhone.textContent = phone;
-  sActivity.textContent = activity;
-  sItem.textContent = item;
+  document.getElementById("sName").textContent = fullName;
+  document.getElementById("sPhone").textContent = phone;
+  document.getElementById("sActivity").textContent = activity;
+  document.getElementById("sItem").textContent = item;
 
-  formBox.classList.add("hidden");
-  summaryBox.classList.remove("hidden");
+  document.getElementById("formBox").classList.add("hidden");
+  document.getElementById("summaryBox").classList.remove("hidden");
 }
 
 function newForm() {
-  formBox.reset?.();
-  summaryBox.classList.add("hidden");
-  formBox.classList.remove("hidden");
+  document.getElementById("fullName").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("activity").value = "";
+  document.getElementById("item").innerHTML = '<option value="">เลือกรายการ</option>';
+
+  document.getElementById("summaryBox").classList.add("hidden");
+  document.getElementById("formBox").classList.remove("hidden");
 }
 
 init();
