@@ -764,59 +764,54 @@ async function submitForm() {
 }
 
 // ฟังก์ชันค้นหาข้อมูล - แก้ไขแล้ว
-async function searchData() {
-  const searchPhone = document.getElementById('searchPhone').value.trim();
-  
-  if (searchPhone.length < 9 || searchPhone.length > 10) {
-    alert('กรุณากรอกเบอร์โทรศัพท์ 9-10 หลัก');
+function searchData() {
+  const phone = document.getElementById("searchPhone").value.trim();
+
+  if (!phone) {
+    alert("กรุณากรอกเบอร์โทรศัพท์");
     return;
   }
+
+  const url =
+    "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu_LPtK_AECsomy4CL_mSzom5XBZdmE8P-xDttAfAhcyxp/exec"
+    + "?mode=search"
+    + "&phone=" + encodeURIComponent(phone);
+
+  console.log("SEARCH URL =", url);
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      console.log("RESULT =", data);
+
+      if (!data.results || data.results.length === 0) {
+        document.getElementById("searchResults").innerHTML =
+          "<p>ไม่พบข้อมูล</p>";
+        return;
+      }
+
+      let html = "";
+      data.results.forEach(r => {
+        html += `
+          <div style="margin-bottom:10px">
+            <b>${r.inputName}</b><br>
+            เบอร์: ${r.phone}<br>
+            กิจกรรม: ${r.activity}<br>
+            รายการ: ${r.item}<br>
+            เวลา: ${r.travelTime}
+          </div>
+        `;
+      });
+
+      document.getElementById("searchResults").innerHTML = html;
+    })
+    .catch(err => {
+      console.error(err);
+      alert("ค้นหาข้อมูลไม่สำเร็จ");
+    });
+}
+
   
-  const resultsContainer = document.getElementById('searchResults');
-  resultsContainer.innerHTML = `
-    <div class="loading">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">กำลังค้นหาข้อมูล...</p>
-    </div>
-  `;
-  
-  try {
-    console.log('Searching for phone:', searchPhone);
-    
-    // ใช้ CORS proxy หรือทดสอบ URL
-    const searchUrl = `${GAS_URL}?mode=search&phone=${encodeURIComponent(searchPhone)}`;
-    console.log('Search URL:', searchUrl);
-    
-    // ลองใช้ fetch with retry
-    const response = await fetchWithRetry(searchUrl, 3);
-    
-    if (!response) {
-      throw new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-    }
-    
-    const data = await response.json();
-    
-    console.log('Search response:', data);
-    
-    if (data.error) {
-      resultsContainer.innerHTML = `
-        <div class="no-results">
-          <div class="no-results-icon">⚠️</div>
-          <p>${data.error}</p>
-        </div>
-      `;
-      return;
-    }
-    
-    if (!data.success) {
-      resultsContainer.innerHTML = `
-        <div class="no-results">
-          <div class="no-results-icon">⚠️</div>
-          <p>${data.message || 'ไม่พบข้อมูล'}</p>
-        </div>
-      `;
-      return;
-    }
     
     if (!data.results || data.results.length === 0) {
       resultsContainer.innerHTML = `
@@ -827,7 +822,7 @@ async function searchData() {
       `;
       return;
     }
-    
+  
     // แสดงผลลัพธ์
     displayResults(data.results);
     
