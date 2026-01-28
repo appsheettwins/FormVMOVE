@@ -12,6 +12,7 @@
   --primary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
   --primary-color: #00c853;
   --primary-dark: #00b248;
+  --secondary-color: #ff6a00;
   --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
   --input-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   --transition: all 0.3s ease;
@@ -32,7 +33,7 @@ body {
   background: #fff;
   border-radius: 24px;
   padding: 28px;
-  max-width: 450px;
+  max-width: 500px;
   width: 100%;
   margin: 20px auto;
   box-shadow: var(--card-shadow);
@@ -48,6 +49,34 @@ body {
   width: 100%;
   height: 6px;
   background: linear-gradient(90deg, #ff6a00, #ff2d55, #34c759);
+}
+
+/* เมนูสวิตช์หน้า */
+.page-switch {
+  display: flex;
+  background: #f5f7fa;
+  border-radius: 16px;
+  padding: 5px;
+  margin-bottom: 25px;
+}
+
+.page-switch button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.page-switch button.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* 🔹 หัวข้อเวอร์ชันใหม่ */
@@ -129,7 +158,7 @@ body {
 }
 
 /* ปุ่มบันทึก */
-button {
+.btn-primary {
   margin-top: 10px;
   width: 100%;
   padding: 18px;
@@ -145,17 +174,35 @@ button {
   font-family: 'Segoe UI', 'Kanit', system-ui, sans-serif;
 }
 
-button:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 200, 83, 0.4);
+.btn-secondary {
+  margin-top: 10px;
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  border-radius: 16px;
+  border: none;
+  background: var(--secondary-color);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 6px 15px rgba(255, 106, 0, 0.3);
+  font-family: 'Segoe UI', 'Kanit', system-ui, sans-serif;
 }
 
-button:active:not(:disabled) {
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
   transform: translateY(0);
 }
 
-button:disabled {
+.btn-primary:disabled,
+.btn-secondary:disabled {
   background: #ccc;
   cursor: not-allowed;
   box-shadow: none;
@@ -197,30 +244,142 @@ button:disabled {
   border-left: 5px solid var(--primary-color);
 }
 
-.summary-box div {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
+/* หน้าค้นหา */
+#searchPage {
+  display: none;
 }
 
-.summary-box div:last-child {
-  margin-bottom: 0;
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
 }
 
-/* ไอคอนสำหรับแต่ละรายการ */
-.summary-box div::before {
-  margin-right: 12px;
+.search-box input {
+  width: 100%;
+  padding: 18px 18px 18px 50px;
+  font-size: 18px;
+  border-radius: 16px;
+  border: 2px solid #e1e5e9;
+  background: #f8f9fa;
+}
+
+.search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
   font-size: 20px;
 }
 
-/* เอฟเฟกต์โหลด */
+/* ผลลัพธ์การค้นหา */
+.results-container {
+  margin-top: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.result-item {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #4facfe;
+  transition: var(--transition);
+}
+
+.result-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.result-name {
+  font-weight: bold;
+  font-size: 18px;
+  color: #333;
+}
+
+.result-phone {
+  background: #e8f5e9;
+  color: #00c853;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.result-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* โหลดข้อมูล */
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 @keyframes pulse {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
 
-.loading {
+.loading-text {
   animation: pulse 1.5s infinite;
 }
 
@@ -244,9 +403,13 @@ button:disabled {
     font-size: 16px;
   }
   
-  button {
+  .btn-primary, .btn-secondary {
     padding: 16px;
     font-size: 17px;
+  }
+  
+  .result-details {
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -255,65 +418,99 @@ button:disabled {
 <body>
 <div class="card">
 
+  <!-- เมนูสวิตช์หน้า -->
+  <div class="page-switch">
+    <button id="formTab" class="active" onclick="switchPage('formPage')">📝 กรอกข้อมูล</button>
+    <button id="searchTab" onclick="switchPage('searchPage')">🔍 ค้นหาข้อมูล</button>
+  </div>
+
   <!-- 🔹 HEADER -->
   <div class="header-title">
     สำรองที่นั่งร่วมกิจกรรมธรรมยาตรา
   </div>
-  
-  <!-- ป้ายสถานะ -->
-  <div style="text-align: center;">
-    <span class="status-badge">กรุณากรอกข้อมูลให้ครบถ้วน</span>
-  </div>
 
-  <!-- ===== FORM ===== -->
-  <div id="form">
-    <div class="form-group">
-      <label for="inputName">ชื่อ-นามสกุล</label>
-      <input id="inputName" placeholder="กรอกชื่อ-นามสกุล" oninput="checkForm()" />
+  <!-- ===== หน้ากรอกข้อมูล ===== -->
+  <div id="formPage">
+    <div style="text-align: center;">
+      <span class="status-badge">กรุณากรอกข้อมูลให้ครบถ้วน</span>
     </div>
 
-    <div class="form-group">
-      <label for="phone">เบอร์โทรศัพท์</label>
-      <input type="tel"
-        id="phone"
-        placeholder="กรอกเบอร์โทร 10 หลัก"
+    <div id="form">
+      <div class="form-group">
+        <label for="inputName">ชื่อ-นามสกุล</label>
+        <input id="inputName" placeholder="กรอกชื่อ-นามสกุล" oninput="checkForm()" />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">เบอร์โทรศัพท์</label>
+        <input type="tel"
+          id="phone"
+          placeholder="กรอกเบอร์โทร 10 หลัก"
+          inputmode="numeric"
+          maxlength="10"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); checkForm();"
+          required />
+      </div>
+
+      <div class="form-group">
+        <label for="activity">กิจกรรม</label>
+        <select id="activity" onchange="updateItems(); checkForm();">
+          <option value="">-- เลือกกิจกรรม --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="item">รายการ</label>
+        <select id="item" onchange="checkForm()">
+          <option value="">-- เลือกรายการ --</option>
+        </select>
+      </div>
+
+      <button id="saveBtn" class="btn-primary" onclick="submitForm()" disabled>
+        บันทึกข้อมูล
+      </button>
+    </div>
+
+    <!-- ===== SUMMARY ===== -->
+    <div id="summary">
+      <div class="success">
+        บันทึกสำเร็จ<br>
+        <span style="font-size: 18px;">รอข้อความยืนยันสำรองที่นั่ง</span>
+      </div>
+
+      <div id="sumText" class="summary-box"></div>
+
+      <button class="btn-secondary" onclick="resetForm()" style="margin-top: 25px;">
+        เพิ่มข้อมูลใหม่
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== หน้าค้นหา ===== -->
+  <div id="searchPage">
+    <div class="search-box">
+      <div class="search-icon">🔍</div>
+      <input 
+        type="tel" 
+        id="searchPhone" 
+        placeholder="กรอกเบอร์โทรศัพท์ที่ต้องการค้นหา (10 หลัก)" 
         inputmode="numeric"
         maxlength="10"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); checkForm();"
-        required />
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10);"
+      />
     </div>
 
-    <div class="form-group">
-      <label for="activity">กิจกรรม</label>
-      <select id="activity" onchange="updateItems(); checkForm();">
-        <option value="">-- เลือกกิจกรรม --</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="item">รายการ</label>
-      <select id="item" onchange="checkForm()">
-        <option value="">-- เลือกรายการ --</option>
-      </select>
-    </div>
-
-    <button id="saveBtn" onclick="submitForm()" disabled>
-      บันทึกข้อมูล
+    <button class="btn-primary" onclick="searchData()">
+      ค้นหาข้อมูล
     </button>
-  </div>
 
-  <!-- ===== SUMMARY ===== -->
-  <div id="summary">
-    <div class="success">
-      บันทึกสำเร็จ<br>
-      <span style="font-size: 18px;">รอข้อความยืนยันสำรองที่นั่ง</span>
+    <div id="searchResults" class="results-container">
+      <!-- ผลลัพธ์จะแสดงที่นี่ -->
+      <div class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <p>กรอกเบอร์โทรศัพท์เพื่อค้นหาข้อมูลการสำรองที่นั่ง</p>
+      </div>
     </div>
-
-    <div id="sumText" class="summary-box"></div>
-
-    <button onclick="resetForm()" style="margin-top: 25px;">
-      เพิ่มข้อมูลใหม่
-    </button>
   </div>
 
 </div>
@@ -324,6 +521,25 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu
 
 let profile = {};
 let activities = [];
+
+// ฟังก์ชันเปลี่ยนหน้า
+function switchPage(pageId) {
+  // ซ่อนหน้าทั้งหมด
+  document.getElementById('formPage').style.display = 'none';
+  document.getElementById('searchPage').style.display = 'none';
+  
+  // อัพเดทแท็บที่ active
+  document.getElementById('formTab').classList.remove('active');
+  document.getElementById('searchTab').classList.remove('active');
+  
+  // แสดงหน้าที่เลือกและตั้งค่า active
+  document.getElementById(pageId).style.display = 'block';
+  if (pageId === 'formPage') {
+    document.getElementById('formTab').classList.add('active');
+  } else {
+    document.getElementById('searchTab').classList.add('active');
+  }
+}
 
 async function init() {
   await liff.init({ liffId: LIFF_ID });
@@ -386,7 +602,6 @@ async function submitForm() {
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "กำลังบันทึก...";
-  btn.classList.add('loading');
 
   const act = activity.value;
   const it = item.value;
@@ -410,7 +625,7 @@ async function submitForm() {
     body: JSON.stringify(payload)
   });
 
-  // แสดงผลสรุปในรูปแบบใหม่
+  // แสดงผลสรุป
   form.style.display = "none";
   summary.style.display = "block";
 
@@ -423,13 +638,123 @@ async function submitForm() {
   `;
   
   // รีเซ็ตปุ่ม
-  btn.classList.remove('loading');
   btn.textContent = originalText;
 }
 
-function resetForm() {
-  location.reload();
+// ฟังก์ชันค้นหาข้อมูล
+async function searchData() {
+  const searchPhone = document.getElementById('searchPhone').value.trim();
+  
+  if (searchPhone.length !== 10) {
+    alert('กรุณากรอกเบอร์โทรศัพท์ 10 หลัก');
+    return;
+  }
+  
+  const resultsContainer = document.getElementById('searchResults');
+  resultsContainer.innerHTML = `
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">กำลังค้นหาข้อมูล...</p>
+    </div>
+  `;
+  
+  try {
+    // เรียก GAS เพื่อค้นหาข้อมูล
+    const response = await fetch(GAS_URL + `?mode=search&phone=${searchPhone}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      resultsContainer.innerHTML = `
+        <div class="no-results">
+          <div class="no-results-icon">⚠️</div>
+          <p>${data.error}</p>
+        </div>
+      `;
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="no-results">
+          <div class="no-results-icon">🔍</div>
+          <p>ไม่พบข้อมูลการสำรองที่นั่งสำหรับเบอร์ ${searchPhone}</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // แสดงผลลัพธ์
+    let resultsHTML = '';
+    
+    data.forEach((item, index) => {
+      resultsHTML += `
+        <div class="result-item">
+          <div class="result-header">
+            <div class="result-name">${item.inputName || 'ไม่มีข้อมูล'}</div>
+            <div class="result-phone">${item.phone || searchPhone}</div>
+          </div>
+          <div class="result-details">
+            <div class="detail-item">
+              <span class="detail-label">กิจกรรม</span>
+              <span class="detail-value">${item.activity || 'ไม่มีข้อมูล'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">รายการ</span>
+              <span class="detail-value">${item.item || 'ไม่มีข้อมูล'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">เวลาออกเดินทาง</span>
+              <span class="detail-value">${item.travelTime || 'ไม่มีข้อมูล'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">วันที่บันทึก</span>
+              <span class="detail-value">${item.timestamp ? new Date(item.timestamp).toLocaleDateString('th-TH') : 'ไม่มีข้อมูล'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    resultsContainer.innerHTML = resultsHTML;
+    
+  } catch (error) {
+    console.error('Error searching data:', error);
+    resultsContainer.innerHTML = `
+      <div class="no-results">
+        <div class="no-results-icon">⚠️</div>
+        <p>เกิดข้อผิดพลาดในการค้นหา กรุณาลองใหม่</p>
+      </div>
+    `;
+  }
 }
+
+// ฟังก์ชันรีเซ็ตฟอร์ม
+function resetForm() {
+  // รีเซ็ตค่าฟอร์ม
+  document.getElementById('inputName').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('activity').selectedIndex = 0;
+  document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>';
+  
+  // ซ่อนผลสรุปและแสดงฟอร์ม
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('form').style.display = 'block';
+  
+  // รีเซ็ตป้ายสถานะ
+  const statusBadge = document.querySelector('.status-badge');
+  statusBadge.textContent = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+  statusBadge.style.background = 'linear-gradient(90deg, #4facfe, #00f2fe)';
+  
+  // ปิดปุ่มบันทึก
+  document.getElementById('saveBtn').disabled = true;
+}
+
+// ฟังก์ชันสำหรับค้นหาเมื่อกด Enter
+document.getElementById('searchPhone').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    searchData();
+  }
+});
 
 init();
 </script>
