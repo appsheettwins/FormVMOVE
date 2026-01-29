@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>สำรองที่นั่ง V-MOVE</title>
 
+<!-- LIFF SDK สำหรับเชื่อมต่อกับ LINE -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
 :root {
+  /* ตัวแปรสีและเอฟเฟกต์หลักสำหรับทั้งเว็บ */
   --primary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
   --primary-color: #00c853;
   --primary-dark: #00b248;
@@ -29,6 +31,7 @@ body {
   justify-content: center;
 }
 
+/* การ์ดหลักที่ครอบฟอร์มทั้งหมด */
 .card {
   background: #fff;
   border-radius: 24px;
@@ -42,6 +45,7 @@ body {
   box-sizing: border-box;
 }
 
+/* แถบสีที่ด้านบนของการ์ด */
 .card::before {
   content: '';
   position: absolute;
@@ -52,6 +56,7 @@ body {
   background: linear-gradient(90deg, #ff6a00, #ff2d55, #34c759);
 }
 
+/* หัวข้อหลัก */
 .header-title {
   text-align: center;
   font-size: 22px; /* ปรับขนาดหัวข้อ */
@@ -65,6 +70,7 @@ body {
   background-clip: text;
 }
 
+/* เส้นใต้หัวข้อ */
 .header-title::after {
   content: '';
   position: absolute;
@@ -90,6 +96,7 @@ body {
   box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
 }
 
+/* กลุ่มฟอร์มแต่ละช่อง */
 .form-group {
   margin-bottom: 20px;
 }
@@ -124,6 +131,7 @@ body {
   box-shadow: var(--input-shadow);
 }
 
+/* ปุ่มบันทึกหลัก */
 .btn-primary {
   margin-top: 10px;
   width: 100%;
@@ -139,6 +147,7 @@ body {
   box-shadow: 0 6px 15px rgba(0, 200, 83, 0.3);
 }
 
+/* ปุ่มรองสำหรับกลับไปกรอกใหม่ */
 .btn-secondary {
   margin-top: 10px;
   width: 100%;
@@ -159,6 +168,7 @@ body {
   box-shadow: none;
 }
 
+/* ส่วนสรุปผล (ซ่อนไว้ตอนแรก) */
 #summary {
   display: none;
   text-align: center;
@@ -181,6 +191,7 @@ body {
   margin-bottom: 12px;
 }
 
+/* กล่องสรุปข้อมูล */
 .summary-box {
   margin-top: 20px;
   font-size: 17px; /* ปรับขนาดสรุปผลบนมือถือ */
@@ -197,6 +208,7 @@ body {
     margin-bottom: 8px;
 }
 
+/* Responsive สำหรับมือถือขนาดเล็ก */
 @media (max-width: 480px) {
   .card { padding: 20px; }
   .header-title { font-size: 20px; }
@@ -206,23 +218,30 @@ body {
 </head>
 
 <body>
+<!-- การ์ดหลัก -->
 <div class="card">
 
   <div class="header-title">
     สำรองที่นั่งกิจกรรมธรรมยาตรา
   </div>
 
+  <!-- หน้าแรก: ฟอร์มกรอกข้อมูล -->
   <div id="formPage">
+    <!-- แสดงสถานะปัจจุบัน -->
     <div id="statusContainer" style="text-align: center;">
       <span class="status-badge">กรุณากรอกข้อมูลให้ครบถ้วน</span>
     </div>
 
+    <!-- ฟอร์มกรอกข้อมูล -->
     <div id="form">
+      <!-- ช่องกรอกชื่อ-นามสกุล -->
       <div class="form-group">
         <label for="inputName">ชื่อ-นามสกุล</label>
         <input id="inputName" placeholder="ระบุชื่อและนามสกุล" oninput="checkForm()" />
+        <!-- oninput: ตรวจสอบฟอร์มทุกครั้งที่พิมพ์ -->
       </div>
 
+      <!-- ช่องกรอกเบอร์โทร -->
       <div class="form-group">
         <label for="phone">เบอร์โทรศัพท์</label>
         <input type="tel"
@@ -232,27 +251,34 @@ body {
           maxlength="10"
           oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); checkForm();"
           required />
+        <!-- อนุญาตให้พิมพ์เฉพาะตัวเลข และจำกัด 10 หลัก -->
       </div>
 
+      <!-- Dropdown เลือกกิจกรรม -->
       <div class="form-group">
         <label for="activity">กิจกรรม</label>
         <select id="activity" onchange="updateItems(); checkForm();">
+          <!-- onchange: อัปเดตรายการและตรวจสอบฟอร์มเมื่อเลือกกิจกรรม -->
           <option value="">-- เลือกกิจกรรม --</option>
         </select>
       </div>
 
+      <!-- Dropdown เลือกรายการ -->
       <div class="form-group">
         <label for="item">รายการ</label>
         <select id="item" onchange="checkForm()">
+          <!-- onchange: ตรวจสอบฟอร์มเมื่อเลือกรายการ -->
           <option value="">-- เลือกรายการ --</option>
         </select>
       </div>
 
+      <!-- ปุ่มบันทึกข้อมูล -->
       <button id="saveBtn" class="btn-primary" onclick="submitForm()" disabled>
         บันทึกข้อมูล
       </button>
     </div>
 
+    <!-- หน้าสรุปผล (ซ่อนไว้ตอนแรก) -->
     <div id="summary">
       <div class="success">
         บันทึกสำเร็จ<br>
@@ -268,21 +294,35 @@ body {
 </div>
 
 <script>
-// ตั้งค่า LIFF และ GAS
-const LIFF_ID = "2008940385-hkDtMTsg";
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu_LPtK_AECsomy4CL_mSzom5XBZdmE8P-xDttAfAhcyxp/exec";
+// **********************************************
+// ค่าคงที่สำคัญ
+// **********************************************
+const LIFF_ID = "2008940385-hkDtMTsg"; // ID สำหรับ LINE LIFF App
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu_LPtK_AECsomy4CL_mSzom5XBZdmE8P-xDttAfAhcyxp/exec"; // URL ของ Google Apps Script สำหรับเก็บข้อมูล
 
-let profile = {};
-let activities = [];
+// ตัวแปร global
+let profile = {}; // เก็บข้อมูลโปรไฟล์จาก LINE
+let activities = []; // เก็บข้อมูลกิจกรรมทั้งหมด
 
+// **********************************************
+// ฟังก์ชัน init()
+// หน้าที่: เริ่มต้น LIFF และดึงข้อมูลโปรไฟล์ผู้ใช้
+// **********************************************
 async function init() {
   try {
+    // เริ่มต้น LIFF ด้วย ID ที่กำหนด
     await liff.init({ liffId: LIFF_ID });
+    
+    // ตรวจสอบว่าผู้ใช้ล็อกอินใน LINE หรือไม่
     if (!liff.isLoggedIn()) {
-      liff.login();
+      liff.login(); // ถ้ายังไม่ล็อกอินให้ redirect ไปหน้า login
       return;
     }
+    
+    // ดึงข้อมูลโปรไฟล์ผู้ใช้จาก LINE
     profile = await liff.getProfile();
+    
+    // โหลดข้อมูลกิจกรรมจากฐานข้อมูล
     loadActivities();
   } catch (error) {
     console.error('LIFF init error:', error);
@@ -290,19 +330,28 @@ async function init() {
   }
 }
 
+// **********************************************
+// ฟังก์ชัน loadActivities()
+// หน้าที่: โหลดข้อมูลกิจกรรมจาก Google Apps Script
+// **********************************************
 async function loadActivities() {
   try {
+    // ส่ง request ไปยัง GAS เพื่อดึงข้อมูลกิจกรรม
     const res = await fetch(GAS_URL + "?mode=activity");
     if (res.ok) {
-      activities = await res.json();
+      activities = await res.json(); // แปลงข้อมูลเป็น JSON
     } else {
-      throw new Error();
+      throw new Error(); // ถ้า request ไม่สำเร็จให้โยน error
     }
 
+    // ดึงกิจกรรมที่ไม่ซ้ำกันจากข้อมูลทั้งหมด
     const actSet = [...new Set(activities.map(a => a.activity))];
     const sel = document.getElementById("activity");
+    
+    // ล้าง options เดิม (เหลือแค่ option แรก)
     while (sel.options.length > 1) sel.remove(1);
 
+    // เพิ่มกิจกรรมแต่ละตัวเข้าไปใน dropdown
     actSet.forEach(a => {
       const o = document.createElement("option");
       o.value = o.textContent = a;
@@ -319,6 +368,10 @@ async function loadActivities() {
   }
 }
 
+// **********************************************
+// ฟังก์ชัน renderBackupActivities()
+// หน้าที่: แสดงข้อมูลกิจกรรมสำรองเมื่อเชื่อมต่อฐานข้อมูลไม่ได้
+// **********************************************
 function renderBackupActivities() {
   const sel = document.getElementById("activity");
   const actSet = [...new Set(activities.map(a => a.activity))];
@@ -329,13 +382,23 @@ function renderBackupActivities() {
   });
 }
 
+// **********************************************
+// ฟังก์ชัน updateItems()
+// หน้าที่: อัปเดตรายการ (item) ตามกิจกรรมที่เลือก
+// **********************************************
 function updateItems() {
+  // ดึงค่ากิจกรรมที่ผู้ใช้เลือก
   const act = document.getElementById("activity").value;
   const itemSel = document.getElementById("item");
+  
+  // ล้างรายการเดิม (เหลือแค่ option แรก)
   while (itemSel.options.length > 1) itemSel.remove(1);
-  if (!act) return;
+  if (!act) return; // ถ้ายังไม่ได้เลือกกิจกรรม ให้หยุดทำงาน
 
+  // กรองเฉพาะรายการที่เกี่ยวข้องกับกิจกรรมที่เลือก
   const filteredItems = activities.filter(a => a.activity === act);
+  
+  // เพิ่มรายการแต่ละตัวเข้าไปใน dropdown
   filteredItems.forEach(a => {
     const o = document.createElement("option");
     o.value = a.item;
@@ -344,76 +407,114 @@ function updateItems() {
   });
 }
 
+// **********************************************
+// ฟังก์ชัน checkForm()
+// หน้าที่: ตรวจสอบความครบถ้วนของฟอร์ม
+// **********************************************
 function checkForm() {
+  // ดึงค่าจากแต่ละฟิลด์ในฟอร์ม
   const inputName = document.getElementById('inputName').value.trim();
   const phone = document.getElementById('phone').value;
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
+  
+  // ตรวจสอบว่าทุกช่องกรอกครบถ้วน (เบอร์โทรต้อง 10 หลัก)
   const ok = inputName && phone.length === 10 && activity && item;
+  
+  // เปิด/ปิดปุ่มบันทึกตามความครบถ้วนของฟอร์ม
   document.getElementById("saveBtn").disabled = !ok;
 }
 
+// **********************************************
+// ฟังก์ชัน submitForm()
+// หน้าที่: ส่งข้อมูลฟอร์มไปยัง Google Apps Script
+// **********************************************
 async function submitForm() {
+  // ปรับสถานะปุ่มระหว่างส่งข้อมูล
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   btn.textContent = "กำลังส่งข้อมูล...";
 
+  // ดึงค่าจากฟอร์ม
   const inputName = document.getElementById('inputName').value;
   const phone = document.getElementById('phone').value;
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
+  
+  // หาเวลาเดินทางจากข้อมูลกิจกรรม
   const travelTime = activities.find(a => a.activity === activity && a.item === item)?.travelTime || "-";
 
+  // รวบรวมข้อมูลที่จะส่ง
   const payload = {
-    userId: profile.userId || "guest",
-    displayName: profile.displayName || "guest",
-    inputName: inputName,
-    phone: phone,
-    activity: activity,
-    item: item,
-    travelTime: travelTime
+    userId: profile.userId || "guest", // ID ผู้ใช้จาก LINE
+    displayName: profile.displayName || "guest", // ชื่อแสดงจาก LINE
+    inputName: inputName, // ชื่อ-นามสกุลจากฟอร์ม
+    phone: phone, // เบอร์โทรจากฟอร์ม
+    activity: activity, // กิจกรรมที่เลือก
+    item: item, // รายการที่เลือก
+    travelTime: travelTime // เวลาเดินทาง
   };
 
   try {
+    // ส่งข้อมูลไปยัง Google Apps Script
     await fetch(GAS_URL, {
       method: "POST",
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
+      mode: 'no-cors', // ใช้ no-cors เพื่อหลีกเลี่ยงปัญหา CORS
+      body: JSON.stringify(payload) // แปลงข้อมูลเป็น JSON string
     });
 
+    // ****************************
+    // แสดงผลลัพธ์หลังบันทึกสำเร็จ
+    // ****************************
+    
     // ซ่อนฟอร์มและป้ายสถานะ
     document.getElementById('form').style.display = "none";
     document.getElementById('statusContainer').style.display = "none";
     
     // แสดงหน้าสรุปผล
     document.getElementById('summary').style.display = "block";
+    
+    // แสดงข้อมูลสรุปในกล่อง
     document.getElementById('sumText').innerHTML = `
-      <div><strong>👤 ชื่อ-สกุล:</strong> ${inputName}</div>
+      <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
       <div><strong>📞 เบอร์โทร:</strong> ${phone}</div>
       <div><strong>🎯 กิจกรรม:</strong> ${activity}</div>
       <div><strong>📦 รายการ:</strong> ${item}</div>
       <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
     `;
   } catch (error) {
+    // แสดงข้อความผิดพลาดถ้าส่งข้อมูลไม่สำเร็จ
     alert('บันทึกล้มเหลว กรุณาลองใหม่อีกครั้ง');
   } finally {
+    // คืนค่าปุ่มกลับสู่สถานะปกติ
     btn.disabled = false;
     btn.textContent = "บันทึกข้อมูล";
   }
 }
 
+// **********************************************
+// ฟังก์ชัน resetForm()
+// หน้าที่: รีเซ็ตฟอร์มเพื่อกรอกข้อมูลใหม่
+// **********************************************
 function resetForm() {
+  // ล้างค่าทุกฟิลด์ในฟอร์ม
   document.getElementById('inputName').value = '';
   document.getElementById('phone').value = '';
-  document.getElementById('activity').selectedIndex = 0;
-  document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>';
+  document.getElementById('activity').selectedIndex = 0; // กลับไปที่ตัวเลือกแรก
+  document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>'; // ล้างรายการ
   
+  // ซ่อนหน้าสรุปผล
   document.getElementById('summary').style.display = 'none';
+  
+  // แสดงฟอร์มและป้ายสถานะ
   document.getElementById('form').style.display = 'block';
   document.getElementById('statusContainer').style.display = 'block';
+  
+  // ปิดปุ่มบันทึก (รอให้กรอกข้อมูลครบ)
   document.getElementById('saveBtn').disabled = true;
 }
 
+// เรียกฟังก์ชัน init() เมื่อโหลดหน้าเว็บเสร็จ
 init();
 </script>
 </body>
