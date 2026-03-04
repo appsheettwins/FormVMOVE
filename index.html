@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>สำรองที่นั่ง V-MOVE</title>
 
-<!-- LIFF SDK สำหรับเชื่อมต่อกับ LINE -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
 :root {
-  /* ตัวแปรสีและเอฟเฟกต์หลักสำหรับทั้งเว็บ */
   --primary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
   --primary-color: #00c853;
   --primary-dark: #00b248;
@@ -24,14 +22,13 @@ body {
   font-family: 'Segoe UI', 'Kanit', system-ui, sans-serif;
   background: var(--primary-gradient);
   margin: 0;
-  padding: 12px; /* ลด Padding ขอบจอ */
+  padding: 12px;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* การ์ดหลักที่ครอบฟอร์มทั้งหมด */
 .card {
   background: #fff;
   border-radius: 24px;
@@ -45,7 +42,6 @@ body {
   box-sizing: border-box;
 }
 
-/* แถบสีที่ด้านบนของการ์ด */
 .card::before {
   content: '';
   position: absolute;
@@ -56,10 +52,9 @@ body {
   background: linear-gradient(90deg, #ff6a00, #ff2d55, #34c759);
 }
 
-/* หัวข้อหลัก */
 .header-title {
   text-align: center;
-  font-size: 22px; /* ปรับขนาดหัวข้อ */
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -70,7 +65,6 @@ body {
   background-clip: text;
 }
 
-/* เส้นใต้หัวข้อ */
 .header-title::after {
   content: '';
   position: absolute;
@@ -83,7 +77,16 @@ body {
   border-radius: 2px;
 }
 
-/* ป้ายสถานะ (แสดงเฉพาะหน้าแรก) */
+/* ส่วนแสดงชื่อ LINE สีทอง */
+#lineNameDisplay {
+  text-align: center;
+  color: #d4af37;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  min-height: 20px;
+}
+
 .status-badge {
   display: inline-block;
   background: linear-gradient(90deg, #4facfe, #00f2fe);
@@ -96,7 +99,6 @@ body {
   box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
 }
 
-/* กลุ่มฟอร์มแต่ละช่อง */
 .form-group {
   margin-bottom: 20px;
 }
@@ -106,22 +108,21 @@ body {
   margin-bottom: 8px;
   display: block;
   color: #333;
-  font-size: 15px; /* ปรับขนาด Label ให้พอดี */
+  font-size: 15px;
   padding-left: 4px;
 }
 
-/* ปรับ Input ให้พิมพ์ง่ายบนมือถือ */
 .form-group input, .form-group select {
   width: 100%;
   padding: 16px; 
-  font-size: 16px; /* ป้องกัน iOS Auto-zoom */
+  font-size: 16px;
   border-radius: 14px;
   border: 2px solid #e1e5e9;
   background: #f8f9fa;
   transition: var(--transition);
   box-sizing: border-box;
   font-family: inherit;
-  -webkit-appearance: none; /* ลบสไตล์เดิมของ Safari */
+  -webkit-appearance: none;
 }
 
 .form-group input:focus, .form-group select:focus {
@@ -131,7 +132,6 @@ body {
   box-shadow: var(--input-shadow);
 }
 
-/* ปุ่มบันทึกหลัก */
 .btn-primary {
   margin-top: 10px;
   width: 100%;
@@ -147,7 +147,6 @@ body {
   box-shadow: 0 6px 15px rgba(0, 200, 83, 0.3);
 }
 
-/* ปุ่มรองสำหรับกลับไปกรอกใหม่ */
 .btn-secondary {
   margin-top: 10px;
   width: 100%;
@@ -168,7 +167,6 @@ body {
   box-shadow: none;
 }
 
-/* ส่วนสรุปผล (ซ่อนไว้ตอนแรก) */
 #summary {
   display: none;
   text-align: center;
@@ -191,10 +189,9 @@ body {
   margin-bottom: 12px;
 }
 
-/* กล่องสรุปข้อมูล */
 .summary-box {
   margin-top: 20px;
-  font-size: 17px; /* ปรับขนาดสรุปผลบนมือถือ */
+  font-size: 17px;
   line-height: 1.8;
   text-align: left;
   background: #fdfdfd;
@@ -208,7 +205,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Responsive สำหรับมือถือขนาดเล็ก */
 @media (max-width: 480px) {
   .card { padding: 20px; }
   .header-title { font-size: 20px; }
@@ -218,30 +214,24 @@ body {
 </head>
 
 <body>
-<!-- การ์ดหลัก -->
 <div class="card">
-
   <div class="header-title">
     สำรองที่นั่งกิจกรรมธรรมยาตรา
   </div>
 
-  <!-- หน้าแรก: ฟอร์มกรอกข้อมูล -->
   <div id="formPage">
-    <!-- แสดงสถานะปัจจุบัน -->
+    <div id="lineNameDisplay"></div>
+
     <div id="statusContainer" style="text-align: center;">
       <span class="status-badge">กรุณากรอกข้อมูลให้ครบถ้วน</span>
     </div>
 
-    <!-- ฟอร์มกรอกข้อมูล -->
     <div id="form">
-      <!-- ช่องกรอกชื่อ-นามสกุล -->
       <div class="form-group">
         <label for="inputName">ชื่อ-นามสกุล</label>
         <input id="inputName" placeholder="ระบุชื่อและนามสกุล" oninput="checkForm()" />
-        <!-- oninput: ตรวจสอบฟอร์มทุกครั้งที่พิมพ์ -->
       </div>
 
-      <!-- ช่องกรอกเบอร์โทร -->
       <div class="form-group">
         <label for="phone">เบอร์โทรศัพท์</label>
         <input type="tel"
@@ -251,34 +241,27 @@ body {
           maxlength="10"
           oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); checkForm();"
           required />
-        <!-- อนุญาตให้พิมพ์เฉพาะตัวเลข และจำกัด 10 หลัก -->
       </div>
 
-      <!-- Dropdown เลือกกิจกรรม -->
       <div class="form-group">
         <label for="activity">กิจกรรม</label>
         <select id="activity" onchange="updateItems(); checkForm();">
-          <!-- onchange: อัปเดตรายการและตรวจสอบฟอร์มเมื่อเลือกกิจกรรม -->
           <option value="">-- เลือกกิจกรรม --</option>
         </select>
       </div>
 
-      <!-- Dropdown เลือกรายการ -->
       <div class="form-group">
         <label for="item">รายการ</label>
         <select id="item" onchange="checkForm()">
-          <!-- onchange: ตรวจสอบฟอร์มเมื่อเลือกรายการ -->
           <option value="">-- เลือกรายการ --</option>
         </select>
       </div>
 
-      <!-- ปุ่มบันทึกข้อมูล -->
       <button id="saveBtn" class="btn-primary" onclick="submitForm()" disabled>
         บันทึกข้อมูล
       </button>
     </div>
 
-    <!-- หน้าสรุปผล (ซ่อนไว้ตอนแรก) -->
     <div id="summary">
       <div class="success">
         บันทึกสำเร็จ<br>
@@ -290,68 +273,49 @@ body {
       </button>
     </div>
   </div>
-
 </div>
 
 <script>
-// **********************************************
-// ค่าคงที่สำคัญ
-// **********************************************
-const LIFF_ID = "2008940385-hkDtMTsg"; // ID สำหรับ LINE LIFF App
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu_LPtK_AECsomy4CL_mSzom5XBZdmE8P-xDttAfAhcyxp/exec"; // URL ของ Google Apps Script สำหรับเก็บข้อมูล
+const LIFF_ID = "2008940385-hkDtMTsg"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyygVxywjy4MKAcxTmr7Idu_LPtK_AECsomy4CL_mSzom5XBZdmE8P-xDttAfAhcyxp/exec"; 
 
-// ตัวแปร global
-let profile = {}; // เก็บข้อมูลโปรไฟล์จาก LINE
-let activities = []; // เก็บข้อมูลกิจกรรมทั้งหมด
+let profile = {}; 
+let activities = []; 
 
-// **********************************************
-// ฟังก์ชัน init()
-// หน้าที่: เริ่มต้น LIFF และดึงข้อมูลโปรไฟล์ผู้ใช้
-// **********************************************
 async function init() {
   try {
-    // เริ่มต้น LIFF ด้วย ID ที่กำหนด
     await liff.init({ liffId: LIFF_ID });
-    
-    // ตรวจสอบว่าผู้ใช้ล็อกอินใน LINE หรือไม่
     if (!liff.isLoggedIn()) {
-      liff.login(); // ถ้ายังไม่ล็อกอินให้ redirect ไปหน้า login
+      liff.login();
       return;
     }
-    
-    // ดึงข้อมูลโปรไฟล์ผู้ใช้จาก LINE
     profile = await liff.getProfile();
     
-    // โหลดข้อมูลกิจกรรมจากฐานข้อมูล
+    // แสดงชื่อ LINE สีทอง
+    if (profile.displayName) {
+      document.getElementById('lineNameDisplay').innerText = "สวัสดีคุณ " + profile.displayName;
+    }
+    
     loadActivities();
   } catch (error) {
     console.error('LIFF init error:', error);
-    loadActivities(); // โหลดข้อมูลแม้จะไม่ได้เปิดใน LINE
+    loadActivities(); 
   }
 }
 
-// **********************************************
-// ฟังก์ชัน loadActivities()
-// หน้าที่: โหลดข้อมูลกิจกรรมจาก Google Apps Script
-// **********************************************
 async function loadActivities() {
   try {
-    // ส่ง request ไปยัง GAS เพื่อดึงข้อมูลกิจกรรม
     const res = await fetch(GAS_URL + "?mode=activity");
     if (res.ok) {
-      activities = await res.json(); // แปลงข้อมูลเป็น JSON
+      activities = await res.json();
     } else {
-      throw new Error(); // ถ้า request ไม่สำเร็จให้โยน error
+      throw new Error();
     }
 
-    // ดึงกิจกรรมที่ไม่ซ้ำกันจากข้อมูลทั้งหมด
     const actSet = [...new Set(activities.map(a => a.activity))];
     const sel = document.getElementById("activity");
-    
-    // ล้าง options เดิม (เหลือแค่ option แรก)
     while (sel.options.length > 1) sel.remove(1);
 
-    // เพิ่มกิจกรรมแต่ละตัวเข้าไปใน dropdown
     actSet.forEach(a => {
       const o = document.createElement("option");
       o.value = o.textContent = a;
@@ -359,7 +323,6 @@ async function loadActivities() {
     });
   } catch (error) {
     console.error('Error loading activities:', error);
-    // ข้อมูลสำรองกรณีเชื่อมต่อ Database ไม่ได้
     activities = [
       { activity: "ธรรมยาตราเชียงราย", item: "รถบัสปรับอากาศ", travelTime: "08:00 น." },
       { activity: "ธรรมยาตราเชียงราย", item: "รถตู้", travelTime: "09:00 น." }
@@ -368,10 +331,6 @@ async function loadActivities() {
   }
 }
 
-// **********************************************
-// ฟังก์ชัน renderBackupActivities()
-// หน้าที่: แสดงข้อมูลกิจกรรมสำรองเมื่อเชื่อมต่อฐานข้อมูลไม่ได้
-// **********************************************
 function renderBackupActivities() {
   const sel = document.getElementById("activity");
   const actSet = [...new Set(activities.map(a => a.activity))];
@@ -382,23 +341,13 @@ function renderBackupActivities() {
   });
 }
 
-// **********************************************
-// ฟังก์ชัน updateItems()
-// หน้าที่: อัปเดตรายการ (item) ตามกิจกรรมที่เลือก
-// **********************************************
 function updateItems() {
-  // ดึงค่ากิจกรรมที่ผู้ใช้เลือก
   const act = document.getElementById("activity").value;
   const itemSel = document.getElementById("item");
-  
-  // ล้างรายการเดิม (เหลือแค่ option แรก)
   while (itemSel.options.length > 1) itemSel.remove(1);
-  if (!act) return; // ถ้ายังไม่ได้เลือกกิจกรรม ให้หยุดทำงาน
+  if (!act) return;
 
-  // กรองเฉพาะรายการที่เกี่ยวข้องกับกิจกรรมที่เลือก
   const filteredItems = activities.filter(a => a.activity === act);
-  
-  // เพิ่มรายการแต่ละตัวเข้าไปใน dropdown
   filteredItems.forEach(a => {
     const o = document.createElement("option");
     o.value = a.item;
@@ -407,28 +356,15 @@ function updateItems() {
   });
 }
 
-// **********************************************
-// ฟังก์ชัน checkForm()
-// หน้าที่: ตรวจสอบความครบถ้วนของฟอร์ม
-// **********************************************
 function checkForm() {
-  // ดึงค่าจากแต่ละฟิลด์ในฟอร์ม
   const inputName = document.getElementById('inputName').value.trim();
   const phone = document.getElementById('phone').value;
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
-  
-  // ตรวจสอบว่าทุกช่องกรอกครบถ้วน (เบอร์โทรต้อง 10 หลัก)
   const ok = inputName && phone.length === 10 && activity && item;
-  
-  // เปิด/ปิดปุ่มบันทึกตามความครบถ้วนของฟอร์ม
   document.getElementById("saveBtn").disabled = !ok;
 }
 
-// **********************************************
-// ฟังก์ชัน submitForm()
-// หน้าที่: ส่งข้อมูลฟอร์มไปยัง Google Apps Script
-// **********************************************
 async function submitForm() {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
@@ -438,13 +374,12 @@ async function submitForm() {
   const phone = document.getElementById('phone').value;
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
-  
   const travelTime = activities.find(a => a.activity === activity && a.item === item)?.travelTime || "-";
 
   const payload = {
     userId: profile.userId || "guest",
     displayName: profile.displayName || "guest",
-    inputName: inputName, // ต้องใช้ชื่อนี้ให้ตรงกับ doPost
+    inputName: inputName,
     phone: phone,
     activity: activity,
     item: item,
@@ -452,15 +387,15 @@ async function submitForm() {
   };
 
   try {
-    // แก้ไข: ห้ามใส่ mode: 'no-cors' เพราะจะทำให้ส่งข้อมูล (Payload) ไปไม่ถึง ChatLog
-    const response = await fetch(GAS_URL, {
+    // ส่ง POST ไปยัง GAS (ถอด mode: 'no-cors' ออก)
+    await fetch(GAS_URL, {
       method: "POST",
       body: JSON.stringify(payload) 
     });
 
-    // แสดงผลหน้าสำเร็จ...
     document.getElementById('form').style.display = "none";
     document.getElementById('statusContainer').style.display = "none";
+    document.getElementById('lineNameDisplay').style.display = "none";
     document.getElementById('summary').style.display = "block";
     document.getElementById('sumText').innerHTML = `
       <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
@@ -478,29 +413,18 @@ async function submitForm() {
   }
 }
 
-// **********************************************
-// ฟังก์ชัน resetForm()
-// หน้าที่: รีเซ็ตฟอร์มเพื่อกรอกข้อมูลใหม่
-// **********************************************
 function resetForm() {
-  // ล้างค่าทุกฟิลด์ในฟอร์ม
   document.getElementById('inputName').value = '';
   document.getElementById('phone').value = '';
-  document.getElementById('activity').selectedIndex = 0; // กลับไปที่ตัวเลือกแรก
-  document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>'; // ล้างรายการ
-  
-  // ซ่อนหน้าสรุปผล
+  document.getElementById('activity').selectedIndex = 0;
+  document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>';
   document.getElementById('summary').style.display = 'none';
-  
-  // แสดงฟอร์มและป้ายสถานะ
   document.getElementById('form').style.display = 'block';
   document.getElementById('statusContainer').style.display = 'block';
-  
-  // ปิดปุ่มบันทึก (รอให้กรอกข้อมูลครบ)
+  document.getElementById('lineNameDisplay').style.display = 'block';
   document.getElementById('saveBtn').disabled = true;
 }
 
-// เรียกฟังก์ชัน init() เมื่อโหลดหน้าเว็บเสร็จ
 init();
 </script>
 </body>
