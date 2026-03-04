@@ -77,26 +77,13 @@ body {
   border-radius: 2px;
 }
 
-/* ส่วนแสดงชื่อ LINE สีทอง */
 #lineNameDisplay {
   text-align: center;
   color: #d4af37;
   font-size: 15px;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   min-height: 20px;
-}
-
-.status-badge {
-  display: inline-block;
-  background: linear-gradient(90deg, #4facfe, #00f2fe);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
 }
 
 .form-group {
@@ -172,21 +159,25 @@ body {
   text-align: center;
 }
 
-.success {
-  font-size: 24px;
+.success-container {
   color: var(--primary-color);
-  font-weight: bold;
-  margin-bottom: 20px;
-  padding: 24px;
   background: rgba(0, 200, 83, 0.08);
   border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 200, 83, 0.2);
 }
 
-.success::before {
-  content: '✅';
-  display: block;
+.success-title {
   font-size: 20px;
-  margin-bottom: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.success-subtitle {
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 .summary-box {
@@ -222,18 +213,14 @@ body {
   <div id="formPage">
     <div id="lineNameDisplay"></div>
 
-    <div id="statusContainer" style="text-align: center;">
-      <span class="status-badge">กรุณากรอกข้อมูลให้ครบถ้วน</span>
-    </div>
-
     <div id="form">
       <div class="form-group">
-        <label for="inputName">ชื่อ-นามสกุล</label>
+        <label for="inputName">👤 ชื่อ-นามสกุล</label>
         <input id="inputName" placeholder="ระบุชื่อและนามสกุล" oninput="checkForm()" />
       </div>
 
       <div class="form-group">
-        <label for="phone">เบอร์โทรศัพท์</label>
+        <label for="phone">📞 เบอร์โทรศัพท์</label>
         <input type="tel"
           id="phone"
           placeholder="กรอกเบอร์โทร 10 หลัก"
@@ -244,32 +231,32 @@ body {
       </div>
 
       <div class="form-group">
-        <label for="activity">กิจกรรม</label>
+        <label for="activity">🚩 กิจกรรม</label>
         <select id="activity" onchange="updateItems(); checkForm();">
           <option value="">-- เลือกกิจกรรม --</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="item">รายการ</label>
+        <label for="item">🚌 รายการเดินทาง</label>
         <select id="item" onchange="checkForm()">
           <option value="">-- เลือกรายการ --</option>
         </select>
       </div>
 
       <button id="saveBtn" class="btn-primary" onclick="submitForm()" disabled>
-        บันทึกข้อมูล
+        🚀 บันทึกข้อมูล
       </button>
     </div>
 
     <div id="summary">
-      <div class="success">
-        บันทึกสำเร็จ<br>
-        <span style="font-size: 16px; font-weight: normal; color: #666;">รอข้อความยืนยันสำรองที่นั่ง</span>
+      <div class="success-container">
+        <div class="success-title">✅ บันทึกข้อมูลสำเร็จ</div>
+        <div class="success-subtitle">รอข้อความยืนยันการสำรองที่นั่ง</div>
       </div>
       <div id="sumText" class="summary-box"></div>
       <button class="btn-secondary" onclick="resetForm()" style="margin-top: 25px;">
-        เพิ่มข้อมูลใหม่
+        ➕ เพิ่มข้อมูลใหม่
       </button>
     </div>
   </div>
@@ -291,7 +278,6 @@ async function init() {
     }
     profile = await liff.getProfile();
     
-    // แสดงชื่อ LINE สีทอง
     if (profile.displayName) {
       document.getElementById('lineNameDisplay').innerText = "สวัสดีคุณ " + profile.displayName;
     }
@@ -368,7 +354,7 @@ function checkForm() {
 async function submitForm() {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
-  btn.textContent = "กำลังส่งข้อมูล...";
+  btn.textContent = "⌛ กำลังส่งข้อมูล...";
 
   const inputName = document.getElementById('inputName').value;
   const phone = document.getElementById('phone').value;
@@ -387,17 +373,15 @@ async function submitForm() {
   };
 
   try {
-    // ใช้คำสั่ง fetch พร้อมกำหนดรายละเอียดให้ถูกต้อง
     await fetch(GAS_URL, {
       method: "POST",
-      mode: "no-cors", // จำเป็นสำหรับการส่งข้าม Domain ไปยัง GAS
+      mode: "no-cors", 
       headers: {
         "Content-Type": "text/plain",
       },
       body: JSON.stringify(payload) 
     });
 
-    // แสดงผลสำเร็จทันที (เนื่องจาก no-cors จะไม่คืนค่า Response กลับมาให้เช็ค)
     showSuccessUI(inputName, phone, activity, item, travelTime);
     
   } catch (error) {
@@ -405,21 +389,19 @@ async function submitForm() {
     alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
   } finally {
     btn.disabled = false;
-    btn.textContent = "บันทึกข้อมูล";
+    btn.textContent = "🚀 บันทึกข้อมูล";
   }
 }
 
-// แยกฟังก์ชันแสดงผลเพื่อความสะอาดของโค้ด
 function showSuccessUI(inputName, phone, activity, item, travelTime) {
   document.getElementById('form').style.display = "none";
-  document.getElementById('statusContainer').style.display = "none";
   document.getElementById('lineNameDisplay').style.display = "none";
   document.getElementById('summary').style.display = "block";
   document.getElementById('sumText').innerHTML = `
-    <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
+    <div><strong>👤 ชื่อ-สกุล:</strong> ${inputName}</div>
     <div><strong>📞 เบอร์โทร:</strong> ${phone}</div>
-    <div><strong>🎯 กิจกรรม:</strong> ${activity}</div>
-    <div><strong>📦 รายการ:</strong> ${item}</div>
+    <div><strong>🚩 กิจกรรม:</strong> ${activity}</div>
+    <div><strong>🚌 รายการ:</strong> ${item}</div>
     <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
   `;
 }
@@ -431,7 +413,6 @@ function resetForm() {
   document.getElementById('item').innerHTML = '<option value="">-- เลือกรายการ --</option>';
   document.getElementById('summary').style.display = 'none';
   document.getElementById('form').style.display = 'block';
-  document.getElementById('statusContainer').style.display = 'block';
   document.getElementById('lineNameDisplay').style.display = 'block';
   document.getElementById('saveBtn').disabled = true;
 }
