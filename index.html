@@ -435,31 +435,30 @@ async function submitForm() {
   btn.textContent = "กำลังส่งข้อมูล...";
 
   const inputName = document.getElementById('inputName').value;
-  let phone = document.getElementById('phone').value; // ดึงค่าเบอร์โทร
+  const phone = document.getElementById('phone').value;
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
   
   const travelTime = activities.find(a => a.activity === activity && a.item === item)?.travelTime || "-";
 
-  // รวบรวมข้อมูล
   const payload = {
     userId: profile.userId || "guest",
     displayName: profile.displayName || "guest",
-    inputName: inputName,
-    phone: String(phone), // มั่นใจว่าเป็น String
+    inputName: inputName, // ต้องใช้ชื่อนี้ให้ตรงกับ doPost
+    phone: phone,
     activity: activity,
     item: item,
     travelTime: travelTime
   };
 
   try {
-    // ส่งข้อมูลแบบ POST
-    await fetch(GAS_URL, {
+    // แก้ไข: ห้ามใส่ mode: 'no-cors' เพราะจะทำให้ส่งข้อมูล (Payload) ไปไม่ถึง ChatLog
+    const response = await fetch(GAS_URL, {
       method: "POST",
       body: JSON.stringify(payload) 
     });
 
-    // แสดงผลหน้าสรุป...
+    // แสดงผลหน้าสำเร็จ...
     document.getElementById('form').style.display = "none";
     document.getElementById('statusContainer').style.display = "none";
     document.getElementById('summary').style.display = "block";
@@ -471,6 +470,7 @@ async function submitForm() {
       <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
     `;
   } catch (error) {
+    console.error(error);
     alert('บันทึกล้มเหลว');
   } finally {
     btn.disabled = false;
