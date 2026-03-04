@@ -387,43 +387,30 @@ async function submitForm() {
   };
 
   try {
+    // ส่ง POST ไปยัง GAS (ถอด mode: 'no-cors' ออก)
+    await fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify(payload) 
+    });
 
-  const formData = new URLSearchParams();
-  Object.keys(payload).forEach(key => {
-    formData.append(key, payload[key]);
-  });
-
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  });
-
-  const result = await res.text();
-  console.log("GAS Response:", result);
-
-  if (!res.ok) {
-    throw new Error("Server error");
+    document.getElementById('form').style.display = "none";
+    document.getElementById('statusContainer').style.display = "none";
+    document.getElementById('lineNameDisplay').style.display = "none";
+    document.getElementById('summary').style.display = "block";
+    document.getElementById('sumText').innerHTML = `
+      <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
+      <div><strong>📞 เบอร์โทร:</strong> ${phone}</div>
+      <div><strong>🎯 กิจกรรม:</strong> ${activity}</div>
+      <div><strong>📦 รายการ:</strong> ${item}</div>
+      <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
+    `;
+  } catch (error) {
+    console.error(error);
+    alert('บันทึกล้มเหลว');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "บันทึกข้อมูล";
   }
-
-  // แสดงหน้าสำเร็จเหมือนเดิม
-  document.getElementById('form').style.display = "none";
-  document.getElementById('statusContainer').style.display = "none";
-  document.getElementById('lineNameDisplay').style.display = "none";
-  document.getElementById('summary').style.display = "block";
-  document.getElementById('sumText').innerHTML = `
-    <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
-    <div><strong>📞 เบอร์โทร:</strong> ${phone}</div>
-    <div><strong>🎯 กิจกรรม:</strong> ${activity}</div>
-    <div><strong>📦 รายการ:</strong> ${item}</div>
-    <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
-  `;
-
-} catch (error) {
-  console.error(error);
-  alert('บันทึกล้มเหลว กรุณาลองใหม่อีกครั้ง');
 }
 
 function resetForm() {
