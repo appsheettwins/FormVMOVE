@@ -430,51 +430,39 @@ function checkForm() {
 // หน้าที่: ส่งข้อมูลฟอร์มไปยัง Google Apps Script
 // **********************************************
 async function submitForm() {
-  // ปรับสถานะปุ่มระหว่างส่งข้อมูล
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   btn.textContent = "กำลังส่งข้อมูล...";
 
-  // ดึงค่าจากฟอร์ม
   const inputName = document.getElementById('inputName').value;
-  const phone = document.getElementById('phone').value;
+  let phone = document.getElementById('phone').value; // ดึงค่าเบอร์โทร
   const activity = document.getElementById('activity').value;
   const item = document.getElementById('item').value;
   
-  // หาเวลาเดินทางจากข้อมูลกิจกรรม
   const travelTime = activities.find(a => a.activity === activity && a.item === item)?.travelTime || "-";
 
-  // รวบรวมข้อมูลที่จะส่ง
+  // รวบรวมข้อมูล
   const payload = {
-    userId: profile.userId || "guest", // ID ผู้ใช้จาก LINE
-    displayName: profile.displayName || "guest", // ชื่อแสดงจาก LINE
-    inputName: inputName, // ชื่อ-นามสกุลจากฟอร์ม
-    phone: phone, // เบอร์โทรจากฟอร์ม
-    activity: activity, // กิจกรรมที่เลือก
-    item: item, // รายการที่เลือก
-    travelTime: travelTime // เวลาเดินทาง
+    userId: profile.userId || "guest",
+    displayName: profile.displayName || "guest",
+    inputName: inputName,
+    phone: String(phone), // มั่นใจว่าเป็น String
+    activity: activity,
+    item: item,
+    travelTime: travelTime
   };
 
   try {
-    // ส่งข้อมูลไปยัง Google Apps Script
+    // ส่งข้อมูลแบบ POST
     await fetch(GAS_URL, {
       method: "POST",
-      mode: 'no-cors', // ใช้ no-cors เพื่อหลีกเลี่ยงปัญหา CORS
-      body: JSON.stringify(payload) // แปลงข้อมูลเป็น JSON string
+      body: JSON.stringify(payload) 
     });
 
-    // ****************************
-    // แสดงผลลัพธ์หลังบันทึกสำเร็จ
-    // ****************************
-    
-    // ซ่อนฟอร์มและป้ายสถานะ
+    // แสดงผลหน้าสรุป...
     document.getElementById('form').style.display = "none";
     document.getElementById('statusContainer').style.display = "none";
-    
-    // แสดงหน้าสรุปผล
     document.getElementById('summary').style.display = "block";
-    
-    // แสดงข้อมูลสรุปในกล่อง
     document.getElementById('sumText').innerHTML = `
       <div><strong>😊 ชื่อ-สกุล:</strong> ${inputName}</div>
       <div><strong>📞 เบอร์โทร:</strong> ${phone}</div>
@@ -483,10 +471,8 @@ async function submitForm() {
       <div><strong>🕒 เวลาเดินทาง:</strong> ${travelTime}</div>
     `;
   } catch (error) {
-    // แสดงข้อความผิดพลาดถ้าส่งข้อมูลไม่สำเร็จ
-    alert('บันทึกล้มเหลว กรุณาลองใหม่อีกครั้ง');
+    alert('บันทึกล้มเหลว');
   } finally {
-    // คืนค่าปุ่มกลับสู่สถานะปกติ
     btn.disabled = false;
     btn.textContent = "บันทึกข้อมูล";
   }
